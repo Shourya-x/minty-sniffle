@@ -1,0 +1,4 @@
+(sym_lib_table
+	(version 7)
+	(lib (name "kleeb-master") (type "KiCad") (uri "/home/shouryapandey/Documents/minty-sniffle/hardware/kicad/Libraries/kleeb-master") (options "") (descr ""))
+)
