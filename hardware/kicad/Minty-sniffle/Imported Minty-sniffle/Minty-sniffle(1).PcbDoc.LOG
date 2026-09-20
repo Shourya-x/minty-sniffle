@@ -1,0 +1,9 @@
+Importer Log Report
+Document: C:\Users\Shourya Pandey\Documents\minty-sniffle\hardware\kicad\Minty-sniffle\Minty-sniffle.kicad_pcb
+    Section : Analyze Document from - C:\Users\Shourya Pandey\Documents\minty-sniffle\hardware\kicad\Minty-sniffle\Minty-sniffle.kicad_pcb
+        Warning: Unknown child 'generator_version' of 'kicad_pcb'.
+    EndSection
+    Section : Import Document - C:\Users\Shourya Pandey\Documents\minty-sniffle\hardware\kicad\Minty-sniffle\Imported Minty-sniffle\Minty-sniffle(1).PcbDoc
+        Event: Nets was imported.
+        Event: Net Classes was imported.
+    EndSection

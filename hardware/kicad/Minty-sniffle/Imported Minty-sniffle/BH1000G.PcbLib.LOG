@@ -1,0 +1,25 @@
+Importer Log Report
+Document: C:\Users\Shourya Pandey\Documents\minty-sniffle\hardware\kicad\Libraries\BH1000G
+    Section : Import Document - C:\Users\Shourya Pandey\Documents\minty-sniffle\hardware\kicad\Minty-sniffle\Imported Minty-sniffle\BH1000G.PcbLib
+        Event: Component REF** was successfully imported.
+        Section : Component REF** importing.
+            Event: Pad N on [0,6.5] was successfully imported.
+            Event: Pad P on [0,-14] was successfully imported.
+            Event: Line with 2 vertices was successfully imported.
+            Event: Line with 2 vertices was successfully imported.
+            Event: Line with 2 vertices was successfully imported.
+            Event: Line with 1 vertices was successfully imported.
+            Event: Line with 2 vertices was successfully imported.
+            Event: Line with 2 vertices was successfully imported.
+            Event: Line with 2 vertices was successfully imported.
+            Event: Line with 1 vertices was successfully imported.
+            Event: Line with 2 vertices was successfully imported.
+            Event: Line with 2 vertices was successfully imported.
+            Event: Line with 2 vertices was successfully imported.
+            Event: Line with 1 vertices was successfully imported.
+            Event: Text 'user +' was successfully imported.
+            Event: Text 'user +' was successfully imported.
+            Event: Text 'user -' was successfully imported.
+            Event: Text 'user -' was successfully imported.
+        EndSection
+    EndSection
