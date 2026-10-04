@@ -1,0 +1,23 @@
+{
+  "schematic": "hardware/kicad/Minty-sniffle/Minty-sniffle.kicad_sch",
+  "board": "hardware/kicad/Minty-sniffle/Minty-sniffle.kicad_pcb",
+  "docs": "docs/",
+  "model": null,
+  "maxTurns": 40,
+  "maxRepairCycles": 5,
+  "budgets": {},
+  "turnTimeoutMs": 600000,
+  "turnMaxMs": 3600000,
+  "heartbeatMs": 30000,
+  "maxStageRetries": 2,
+  "llmCache": true,
+  "generatedHashes": {
+    "SPEC.md": "f8cac80b28df07297de8b6f8a30c3d3bd89b24f51f5572a50c2b1433632663bb",
+    "BOM.md": "0223712df89daa0ecbb9267c32f5ae38e1e9b7ee864e422ffc176cb147a0c453",
+    "PINOUT.md": "2f8300b996823b97a331dd9aa92d1ee9b98de02984dd364d1d4541bd941fd4cd",
+    "SUBSYSTEMS.md": "db49a019bf451bafe4bfe7bd11bdb237ea92276902837b9e737fc04c9ad1b000",
+    "LAYOUT.md": "6b777efa89299f6c9600ea1b0c67cd35bb272f462559b2a060a433798755ad01",
+    "DECISIONS.md": "c6efc427ae623e60154a2a228b840ed41021d4081afa0170202561023db9419d",
+    "CHANGELOG.md": "8238156a20fc1e378148a477d2eafb72b1089168adde911058e64453f36ac02a"
+  }
+}
