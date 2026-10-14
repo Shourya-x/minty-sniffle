@@ -1,0 +1,44 @@
+{
+  "verification.datasheet_status": {
+    "value": "User authorized wiring without datasheet verification; manufacturer pin mappings and electrical limits remain unverified.",
+    "source": "docs/SPEC.md#Assumptions",
+    "affects": [
+      "BT1",
+      "U2",
+      "U3",
+      "U4"
+    ]
+  },
+  "firmware.battery_adc_settling_ms": {
+    "min": 50,
+    "value": "Allow at least 50ms settling and appropriate SAADC acquisition time for 2.2M/1M divider with 10nF reservoir.",
+    "source": "docs/SPEC.md#Assumptions",
+    "affects": [
+      "R4",
+      "R5",
+      "C8",
+      "BAT_ADC"
+    ]
+  },
+  "power.latch_scope": {
+    "value": "Preserve finalized subsystems and unrelated GPIOs; only add AO3401A/2N7002/BAT54-family latch using module 1.12/P0.04=PWR_HOLD and 1.13/P0.05=PWR_BUTTON; no PCB changes.",
+    "source": "docs/SPEC.md#Assumptions",
+    "affects": [
+      "1",
+      "Q1",
+      "Q2",
+      "SW3"
+    ]
+  },
+  "power.off_state_limits": {
+    "value": "Preserve raw-battery R4/R5/C8 and BAT_ADC. Divider draws 0.9375uA at 3V while OFF; R11 limits divider-only residual rail voltage, but semiconductor leakage and external debug injection are unverified. No numeric total sleep-current budget is specified; a held SW3 overrides shutdown.",
+    "source": "docs/SPEC.md#Assumptions",
+    "affects": [
+      "R4",
+      "R5",
+      "C8",
+      "R11",
+      "SW3"
+    ]
+  }
+}

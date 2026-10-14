@@ -1,0 +1,93 @@
+10-14 21:20:48 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 674:Plugin executed on: 'linux'
+10-14 21:20:48 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 675:Plugin executed with python version: '3.14.7 (main, Aug 10 2026, 00:00:00) [GCC 16.1.1 20260515 (Red Hat 16.1.1-2)]'
+10-14 21:20:48 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 676:KiCad build version: 10.0.6-1.fc44
+10-14 21:20:48 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 677:Plugin version: 5.0.0
+
+10-14 21:20:48 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 678:Frame repr: <wx._core.Frame object at 0x7f51a9effd10>
+10-14 21:36:05 freerouting 123:Starting _run_steps...
+10-14 21:36:05 freerouting 127:Loaded board: Minty-sniffle.kicad_pcb
+10-14 21:36:05 freerouting 134:Freerouting jar configured at: jar/freerouting-2.4.1.jar
+10-14 21:36:05 freerouting 163:Progress dialog displayed.
+10-14 21:36:05 freerouting 179:Background thread checking Java and JSON/API availability...
+10-14 21:36:05 freerouting 118:Found Java in system PATH (/usr/bin/java).
+10-14 21:36:05 freerouting 188:Java version check: ok=True, path=/usr/bin/java
+10-14 21:36:05 freerouting 240:=== Routing mode: DSN (default) ===
+10-14 21:36:05 freerouting 473:Executing DSN stages...
+10-14 21:36:05 freerouting 101:Exporting board to DSN via pcbnew.ExportSpecctraDSN...
+10-14 21:36:05 freerouting 103:Trying standard pcbnew.ExportSpecctraDSN(filename)...
+10-14 21:36:05 freerouting 117:DSN export succeeded.
+10-14 21:36:05 freerouting 125:Sanitizing exported DSN file...
+10-14 21:36:05 freerouting 135:Sanitization complete.
+10-14 21:36:05 freerouting 92:Saved debug input DSN to: /home/shouryapandey/.local/state/freerouting/logs/kicad/freerouting_input_board.dsn
+10-14 21:36:05 freerouting 156:Built DSN routing command: /usr/bin/java -jar /home/shouryapandey/.local/share/kicad/10.0/3rdparty/plugins/app_freerouting_kicad-plugin/jar/freerouting-2.4.1.jar -de /home/shouryapandey/Documents/minty-sniffle/hardware/kicad/Minty-sniffle/freerouting.dsn -do /home/shouryapandey/Documents/minty-sniffle/hardware/kicad/Minty-sniffle/freerouting.ses -host KiCad --gui.enabled=false --api_server.enabled=false --mcp_server.enabled=false --logging.file.location=/home/shouryapandey/.local/state/freerouting/logs/kicad
+10-14 21:37:14 freerouting 494:ProcessThread completed. Terminating dialog...
+10-14 21:37:14 freerouting 291:Destroying ProcessDialog before applying results.
+10-14 21:37:14 freerouting 313:Importing Specctra SES file into KiCad (DSN mode)...
+10-14 21:37:14 freerouting 211:Saved debug output SES (as DSN filename) to: /home/shouryapandey/.local/state/freerouting/logs/kicad/freerouting_output_board.dsn
+10-14 21:37:14 freerouting 215:Importing Specctra SES into KiCad...
+10-14 21:37:14 freerouting 217:Trying standard pcbnew.ImportSpecctraSES(filename)...
+10-14 21:37:14 freerouting 231:SES import succeeded.
+10-14 21:37:14 freerouting 236:KiCad UI refreshed after DSN import.
+10-14 22:03:09 freerouting 123:Starting _run_steps...
+10-14 22:03:09 freerouting 127:Loaded board: Minty-sniffle.kicad_pcb
+10-14 22:03:09 freerouting 134:Freerouting jar configured at: jar/freerouting-2.4.1.jar
+10-14 22:03:10 freerouting 163:Progress dialog displayed.
+10-14 22:03:10 freerouting 179:Background thread checking Java and JSON/API availability...
+10-14 22:03:10 freerouting 118:Found Java in system PATH (/usr/bin/java).
+10-14 22:03:10 freerouting 188:Java version check: ok=True, path=/usr/bin/java
+10-14 22:03:10 freerouting 240:=== Routing mode: DSN (default) ===
+10-14 22:03:10 freerouting 473:Executing DSN stages...
+10-14 22:03:10 freerouting 101:Exporting board to DSN via pcbnew.ExportSpecctraDSN...
+10-14 22:03:10 freerouting 103:Trying standard pcbnew.ExportSpecctraDSN(filename)...
+10-14 22:03:10 freerouting 117:DSN export succeeded.
+10-14 22:03:10 freerouting 125:Sanitizing exported DSN file...
+10-14 22:03:10 freerouting 135:Sanitization complete.
+10-14 22:03:10 freerouting 92:Saved debug input DSN to: /home/shouryapandey/.local/state/freerouting/logs/kicad/freerouting_input_board.dsn
+10-14 22:03:10 freerouting 156:Built DSN routing command: /usr/bin/java -jar /home/shouryapandey/.local/share/kicad/10.0/3rdparty/plugins/app_freerouting_kicad-plugin/jar/freerouting-2.4.1.jar -de /home/shouryapandey/Documents/minty-sniffle/hardware/kicad/Minty-sniffle/freerouting.dsn -do /home/shouryapandey/Documents/minty-sniffle/hardware/kicad/Minty-sniffle/freerouting.ses -host KiCad --gui.enabled=false --api_server.enabled=false --mcp_server.enabled=false --logging.file.location=/home/shouryapandey/.local/state/freerouting/logs/kicad
+10-14 22:03:55 freerouting 494:ProcessThread completed. Terminating dialog...
+10-14 22:03:55 freerouting 291:Destroying ProcessDialog before applying results.
+10-14 22:03:55 freerouting 313:Importing Specctra SES file into KiCad (DSN mode)...
+10-14 22:03:55 freerouting 211:Saved debug output SES (as DSN filename) to: /home/shouryapandey/.local/state/freerouting/logs/kicad/freerouting_output_board.dsn
+10-14 22:03:55 freerouting 215:Importing Specctra SES into KiCad...
+10-14 22:03:55 freerouting 217:Trying standard pcbnew.ImportSpecctraSES(filename)...
+10-14 22:03:55 freerouting 231:SES import succeeded.
+10-14 22:03:55 freerouting 236:KiCad UI refreshed after DSN import.
+10-14 22:04:41 freerouting 65:Logging configured successfully in plugin.py.
+10-14 22:04:41 kicad_testpoints-pcm 307:Loading kicad_testpoints
+10-14 22:04:41 kicad_partsplacer-pcm 400:Loading kicad_partsplacer
+10-14 22:04:41 Bakery 40:================================================================================
+10-14 22:04:41 Bakery 41:Bakery plugin __init__.py loading
+10-14 22:04:41 Bakery 66:Loading Bakery plugin...
+10-14 22:04:41 Bakery 69:Bakery plugin registered successfully
+10-14 22:04:51 kicad_testpoints-pcm 74:MyPanel.__init__
+10-14 22:04:56 kicad_testpoints-pcm 161:Submitting.
+/home/shouryapandey/Documents/minty-sniffle/hardware/kicad/Minty-sniffle/Minty-sniffle-testpoints.csv
+Aux origin True
+10-14 22:04:59 kicad_testpoints-pcm 191:Canceling
+10-14 22:04:59 kicad_testpoints-pcm 331:Destroy Dialog
+10-14 22:06:53 impart_plugin 46:Plugin initialization started on Linux
+10-14 22:06:53 impart_plugin 47:Python executable: /usr/bin/python3
+10-14 22:06:53 impart_plugin 48:Python version: 3.14.7 (main, Aug 10 2026, 00:00:00) [GCC 16.1.1 20260515 (Red Hat 16.1.1-2)]
+10-14 22:06:53 impart_plugin 49:Plugin directory: /home/shouryapandey/.local/share/kicad/10.0/3rdparty/plugins/com_github_Steffen-W_impartGUI
+10-14 22:06:53 impart_plugin 137:Plugin started
+10-14 22:06:53 impart_plugin 83:Added kiutils to sys.path: /home/shouryapandey/.local/share/kicad/10.0/3rdparty/plugins/com_github_Steffen-W_impartGUI/kiutils/src
+10-14 22:06:53 impart_plugin 91:Added easyeda2kicad to sys.path: /home/shouryapandey/.local/share/kicad/10.0/3rdparty/plugins/com_github_Steffen-W_impartGUI/easyeda2kicad
+10-14 22:06:53 impart_plugin 97:Added plugin directory to sys.path: /home/shouryapandey/.local/share/kicad/10.0/3rdparty/plugins/com_github_Steffen-W_impartGUI
+10-14 22:06:53 impart_plugin 99:All submodule paths configured successfully
+10-14 22:06:53 impart_plugin 171:Starting plugin frontend
+10-14 22:06:53 root 73:Successfully imported wx module
+10-14 22:06:53 com_github_Steffen-W_impartGUI.kicad_cli 48:Found KiCad CLI in PATH: kicad-cli
+10-14 22:06:53 com_github_Steffen-W_impartGUI.KiCadImport 47:kicad_cli initialized successfully
+10-14 22:06:53 root 88:Successfully imported all local modules using relative imports
+10-14 22:06:53 root 372:Running in FALLBACK MODE (called from pcbnew)
+10-14 22:06:53 root 384:Fallback mode: Skipping IPC server registration
+10-14 22:06:54 root 196:Initializing ImpartBackend
+10-14 22:06:54 root 238:KiCad IPC API not available
+10-14 22:06:54 com_github_Steffen-W_impartGUI.KiCad_Settings 66:Initializing KiCad_Settings with path: /home/shouryapandey/.config/kicad/10.0
+10-14 22:06:54 com_github_Steffen-W_impartGUI.FileHandler 52:Changed directory to '.'
+10-14 22:06:54 root 213:Successfully initialized all backend components
+10-14 22:06:54 root 214:KiCad settings path: /home/shouryapandey/.config/kicad/10.0
+10-14 22:06:54 root 949:Created new backend handler
+10-14 22:07:04 root 630:No auto import: Closing everything completely
+10-14 22:07:04 impart_plugin 179:Plugin stopped
+10-14 22:11:57 root 199:IPC server stopped
