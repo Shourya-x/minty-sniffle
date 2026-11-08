@@ -2,7 +2,7 @@
   "schematic": "hardware/kicad/Minty-sniffle/Minty-sniffle.kicad_sch",
   "board": "hardware/kicad/Minty-sniffle/Minty-sniffle.kicad_pcb",
   "docs": "docs/",
-  "model": null,
+  "model": "cursor",
   "maxTurns": 40,
   "maxRepairCycles": 5,
   "budgets": {},

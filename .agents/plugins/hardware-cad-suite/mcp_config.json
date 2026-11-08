@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "copperhead": {
+      "command": "/usr/local/bin/copperhead",
+      "args": [
+        "mcp",
+        "--repo",
+        "/home/shouryapandey/Documents/minty-sniffle"
+      ],
+      "env": {
+        "COPPERHEAD_MODEL": "cursor",
+        "COPPERHEAD_CURSOR_PATH": "/home/shouryapandey/Documents/minty-sniffle/.agents/plugins/hardware-cad-suite/scripts/agy_copperhead_provider.py"
+      }
+    },
+    "freecad": {
+      "command": "/usr/bin/python3",
+      "args": [
+        "/home/shouryapandey/Documents/minty-sniffle/.agents/plugins/hardware-cad-suite/scripts/freecad_mcp_server.py"
+      ]
+    }
+  }
+}

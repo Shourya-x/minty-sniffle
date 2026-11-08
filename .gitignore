@@ -1,1 +1,7 @@
 .history/
+website/node_modules/
+website/dist/
+website/.astro/
+.copperhead/runs/
+*.lck
+~*.lck

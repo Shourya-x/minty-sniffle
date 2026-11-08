@@ -1,0 +1,657 @@
+---
+---
+
+<div class="viewer3d-card">
+  <!-- Top 3D Control Ribbon -->
+  <div class="v3d-toolbar">
+    <div class="v3d-mode-group" role="tablist" aria-label="3D Assembly Mode">
+      <button class="v3d-btn active" data-3d-mode="assembly">
+        <span class="dot-indicator"></span> Full Assembly (PCBA + Shells)
+      </button>
+      <button class="v3d-btn" data-3d-mode="pocket">
+        PCBA + Bottom Pocket (bottom.FCStd)
+      </button>
+      <button class="v3d-btn" data-3d-mode="pcba">
+        Routed PCBA Only (.GLB)
+      </button>
+      <button class="v3d-btn" data-3d-mode="enclosure">
+        FreeCAD Shells Only (.FCStd)
+      </button>
+    </div>
+
+    <div class="v3d-slider-group">
+      <label for="explode-slider" class="mono">EXPLODE VIEW:</label>
+      <input
+        type="range"
+        id="explode-slider"
+        min="0"
+        max="100"
+        value="25"
+        aria-label="Explode 3D Assembly"
+      />
+      <span id="explode-val" class="mono">25%</span>
+    </div>
+
+    <div class="v3d-camera-group">
+      <button class="v3d-cam-btn" data-cam="iso" title="Isometric 3D View">Iso</button>
+      <button class="v3d-cam-btn" data-cam="top" title="Top Component View">Top</button>
+      <button class="v3d-cam-btn" data-cam="side" title="Side Profile (15mm Height)">Side</button>
+      <button class="v3d-cam-btn" data-cam="bottom" title="Bottom View">Bottom</button>
+      <button id="v3d-xray-btn" class="v3d-cam-btn active" title="Toggle Translucent X-Ray Shell">
+        X-Ray Shell
+      </button>
+      <button id="v3d-wire-btn" class="v3d-cam-btn" title="Toggle Wireframe Overlay">
+        Wireframe
+      </button>
+      <button id="v3d-autorotate-btn" class="v3d-cam-btn active" title="Toggle Auto-Rotation">
+        ↻ Spin
+      </button>
+    </div>
+  </div>
+
+  <!-- Main WebGL Viewport -->
+  <div class="v3d-stage-wrap">
+    <div id="v3d-canvas-container" class="v3d-canvas-container">
+      <div id="v3d-loading" class="v3d-loading">
+        <div class="spinner"></div>
+        <span class="mono" id="v3d-loading-text">Loading KiCad 3D GLB Mesh (minty-sniffle-pcba.glb)...</span>
+      </div>
+    </div>
+
+    <!-- Floating HUD Dimension & Spec Overlay -->
+    <div class="v3d-hud-top-left">
+      <div class="hud-tag mono">INTERACTIVE WEBGL CAD VIEWER • REV. A FINAL</div>
+      <div class="hud-dims mono">
+        <span>BOARD OUTLINE: <strong>50.40 × 30.06 mm (13.52 × 4.33 mm RF Notch)</strong></span>
+        <span>TOP SHELL: <strong>50.0 × 30.0 × 15.0 mm (Enclosure.FCStd • 1.0 mm wall)</strong></span>
+        <span>BOTTOM CAP: <strong>52.0 × 32.0 × 5.0 mm (bottom.FCStd • 50.4 × 30.06 mm pocket)</strong></span>
+        <span>ROUTING: <strong>462 Segments • 45 Vias • 4 Copper Zones • 0 Unconnected</strong></span>
+      </div>
+    </div>
+
+    <div class="v3d-hud-bottom-right">
+      <a href="/models/minty-sniffle-pcba.glb" download class="hud-dl-btn mono">
+        ⬇ PCBA (.GLB)
+      </a>
+      <a href="/models/pcb.step" download class="hud-dl-btn mono">
+        ⬇ PCBA (.STEP)
+      </a>
+      <a href="/models/Minty-sniffle-JLCPCB-Gerbers.zip" download class="hud-dl-btn mono">
+        ⬇ JLCPCB Gerbers (.ZIP)
+      </a>
+      <a href="/models/Enclosure.FCStd" download class="hud-dl-btn mono">
+        ⬇ Top Shell (.FCStd)
+      </a>
+      <a href="/models/bottom.FCStd" download class="hud-dl-btn mono">
+        ⬇ Bottom Shell (.FCStd)
+      </a>
+    </div>
+  </div>
+
+  <div class="v3d-footer">
+    <span class="mono">
+      <strong>CONTROLS:</strong> Left-Click + Drag to Orbit • Right-Click + Drag to Pan • Scroll to Zoom • Use Explode Slider to inspect internal stackup
+    </span>
+    <span class="mono v3d-status-right" id="v3d-mesh-stats">
+      SOURCE: hardware/kicad/Minty-sniffle.kicad_pcb &amp; hardware/enclosure/Enclosure.FCStd
+    </span>
+  </div>
+</div>
+
+<script>
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+  import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+  import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+
+  const container = document.getElementById('v3d-canvas-container');
+  const loadingOverlay = document.getElementById('v3d-loading');
+  const loadingText = document.getElementById('v3d-loading-text');
+  const meshStats = document.getElementById('v3d-mesh-stats');
+
+  if (container) {
+    const scene = new THREE.Scene();
+    const isInitialDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    scene.background = new THREE.Color(isInitialDark ? 0x0b111b : 0xf4f6f4);
+
+    const camera = new THREE.PerspectiveCamera(
+      38,
+      container.clientWidth / container.clientHeight,
+      0.5,
+      1000
+    );
+    camera.position.set(62, 52, 68);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.12;
+    container.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 1.1;
+    controls.target.set(0, 0, 0);
+
+    // Studio & Laboratory Lighting
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xdbe4dd, 1.45);
+    hemiLight.position.set(0, 100, 0);
+    scene.add(hemiLight);
+
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.85);
+    dirLight1.position.set(50, 85, 60);
+    dirLight1.castShadow = true;
+    dirLight1.shadow.mapSize.width = 2048;
+    dirLight1.shadow.mapSize.height = 2048;
+    scene.add(dirLight1);
+
+    const dirLight2 = new THREE.DirectionalLight(0xe0f2fe, 0.95);
+    dirLight2.position.set(-60, 40, -50);
+    scene.add(dirLight2);
+
+    const rimLight = new THREE.DirectionalLight(0x99f6e4, 0.75);
+    rimLight.position.set(0, -50, 40);
+    scene.add(rimLight);
+
+    // Laboratory Blueprint Reference Grid (10mm major, 5mm minor)
+    let gridHelper = new THREE.GridHelper(
+      120,
+      24,
+      0x14b8a6,
+      isInitialDark ? 0x1e293b : 0xcbd5e1
+    );
+    gridHelper.position.y = -15;
+    scene.add(gridHelper);
+
+    // Respond dynamically to Light / Dark theme toggle
+    window.addEventListener('minty-theme-change', ((e: CustomEvent) => {
+      const dark = e.detail?.theme === 'dark';
+      scene.background = new THREE.Color(dark ? 0x0b111b : 0xf4f6f4);
+      scene.remove(gridHelper);
+      gridHelper.geometry.dispose();
+      gridHelper = new THREE.GridHelper(120, 24, 0x14b8a6, dark ? 0x1e293b : 0xcbd5e1);
+      gridHelper.position.y = -15;
+      scene.add(gridHelper);
+    }) as EventListener);
+
+    // Root Assembly Groups
+    const assemblyRoot = new THREE.Group();
+    scene.add(assemblyRoot);
+
+    const pcbaGroup = new THREE.Group();
+    const enclosureBottomGroup = new THREE.Group();
+    const enclosureTopGroup = new THREE.Group();
+
+    assemblyRoot.add(pcbaGroup);
+    assemblyRoot.add(enclosureBottomGroup);
+    assemblyRoot.add(enclosureTopGroup);
+
+    // Translucent CAD Materials for Real FreeCAD STL Shells (Enclosure.FCStd + bottom.FCStd)
+    const topShellMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0x0d9488,
+      roughness: 0.22,
+      metalness: 0.05,
+      transparent: true,
+      opacity: 0.32,
+      transmission: 0.45,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+
+    const bottomShellMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0x0f766e,
+      roughness: 0.28,
+      metalness: 0.08,
+      transparent: true,
+      opacity: 0.48,
+      transmission: 0.3,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+
+    const edgeMaterial = new THREE.LineBasicMaterial({
+      color: 0x14b8a6,
+      transparent: true,
+      opacity: 0.72,
+    });
+
+    const stlLoader = new STLLoader();
+
+    // 1. Load Real FreeCAD Top Shell (Enclosure.FCStd -> enclosure-top.stl: 30x50x15mm, 1mm wall)
+    stlLoader.load('/models/enclosure-top.stl', (geom) => {
+      geom.computeVertexNormals();
+      // FreeCAD: X=[-15..15], Y=[-25..25], Z=[0..15] (roof at Z=0..1, open cavity mouth at Z=15)
+      // Rotate +90 deg around X so X=[-15..15], Z=[-25..25], and roof is at top (+Y), mouth at bottom (-Y)
+      geom.rotateX(Math.PI / 2);
+      geom.translate(0, 9.5, 0);
+
+      const mesh = new THREE.Mesh(geom, topShellMaterial);
+      const edges = new THREE.EdgesGeometry(geom, 20);
+      const line = new THREE.LineSegments(edges, edgeMaterial);
+      enclosureTopGroup.add(mesh);
+      enclosureTopGroup.add(line);
+    });
+
+    // 2. Load Real FreeCAD Bottom Pocket Cap (bottom.FCStd -> enclosure-bottom.stl: 32x52x5mm with 30.06x50.40x1mm PCB pocket)
+    stlLoader.load('/models/enclosure-bottom.stl', (geom) => {
+      geom.computeVertexNormals();
+      // FreeCAD: X=[-16..16], Y=[-26..26], Z=[0..5] (solid base at Z=0, 30.06x50.40mm pocket at Z=4..5 facing +Z)
+      // Rotate -90 deg around X so X=[-16..16], Z=[-26..26], and pocket faces UP (+Y) at Y=4..5
+      geom.rotateX(-Math.PI / 2);
+      geom.translate(0, -8.5, 0);
+
+      const mesh = new THREE.Mesh(geom, bottomShellMaterial);
+      const edges = new THREE.EdgesGeometry(geom, 20);
+      const line = new THREE.LineSegments(edges, edgeMaterial);
+      enclosureBottomGroup.add(mesh);
+      enclosureBottomGroup.add(line);
+    });
+
+    // 3. Load the actual exported KiCad 3D Routed PCBA GLB model (minty-sniffle-pcba.glb)
+    const loader = new GLTFLoader();
+    loader.load(
+      '/models/minty-sniffle-pcba.glb',
+      (gltf) => {
+        const model = gltf.scene;
+
+        const box = new THREE.Box3().setFromObject(model);
+        const size = new THREE.Vector3();
+        const center = new THREE.Vector3();
+        box.getSize(size);
+        box.getCenter(center);
+
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scaleFactor = maxDim < 1.0 ? 1000 : 1.0;
+        model.scale.setScalar(scaleFactor);
+
+        const scaledBox = new THREE.Box3().setFromObject(model);
+        const scaledCenter = new THREE.Vector3();
+        scaledBox.getCenter(scaledCenter);
+        model.position.sub(scaledCenter);
+
+        const wrapper = new THREE.Group();
+        wrapper.add(model);
+
+        let meshCount = 0;
+        model.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            meshCount++;
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+
+        pcbaGroup.add(wrapper);
+        if (loadingOverlay) loadingOverlay.style.display = 'none';
+        if (meshStats) {
+          meshStats.textContent = `LOADED: ${meshCount} KICAD 3D MESHES (462 TRACKS • 45 VIAS) + FREECAD TOP/BOTTOM SHELLS`;
+        }
+      },
+      (xhr) => {
+        if (loadingText && xhr.total > 0) {
+          const pct = Math.round((xhr.loaded / xhr.total) * 100);
+          loadingText.textContent = `Loading Routed KiCad 3D PCBA Model (${pct}%)...`;
+        }
+      },
+      (err) => {
+        console.error('Error loading GLB:', err);
+        if (loadingText) {
+          loadingText.textContent = '3D Enclosure Loaded (PCBA GLB fallback active)';
+        }
+        setTimeout(() => {
+          if (loadingOverlay) loadingOverlay.style.display = 'none';
+        }, 1200);
+      }
+    );
+
+    // Explode View Logic
+    const explodeSlider = document.getElementById('explode-slider') as HTMLInputElement | null;
+    const explodeVal = document.getElementById('explode-val');
+
+    function applyExplode(pct: number) {
+      const offset = (pct / 100) * 18;
+      enclosureTopGroup.position.y = offset;
+      enclosureBottomGroup.position.y = -offset * 0.85;
+      pcbaGroup.position.y = 0;
+      if (explodeVal) explodeVal.textContent = `${pct}%`;
+    }
+
+    applyExplode(25);
+
+    explodeSlider?.addEventListener('input', () => {
+      applyExplode(Number(explodeSlider.value));
+    });
+
+    // Mode Switching (Full Assembly vs PCBA+Pocket vs PCBA Only vs Enclosure Only)
+    const modeBtns = document.querySelectorAll('[data-3d-mode]');
+    modeBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        const mode = btn.getAttribute('data-3d-mode');
+        if (mode === 'assembly') {
+          pcbaGroup.visible = true;
+          enclosureTopGroup.visible = true;
+          enclosureBottomGroup.visible = true;
+        } else if (mode === 'pocket') {
+          pcbaGroup.visible = true;
+          enclosureTopGroup.visible = false;
+          enclosureBottomGroup.visible = true;
+        } else if (mode === 'pcba') {
+          pcbaGroup.visible = true;
+          enclosureTopGroup.visible = false;
+          enclosureBottomGroup.visible = false;
+        } else if (mode === 'enclosure') {
+          pcbaGroup.visible = false;
+          enclosureTopGroup.visible = true;
+          enclosureBottomGroup.visible = true;
+        }
+      });
+    });
+
+    // Camera Presets
+    document.querySelectorAll('[data-cam]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const preset = btn.getAttribute('data-cam');
+        controls.target.set(0, 0, 0);
+        if (preset === 'iso') {
+          camera.position.set(62, 52, 68);
+        } else if (preset === 'top') {
+          camera.position.set(0, 95, 0.01);
+        } else if (preset === 'side') {
+          camera.position.set(90, 4, 0);
+        } else if (preset === 'bottom') {
+          camera.position.set(0, -95, 0.01);
+        }
+        controls.update();
+      });
+    });
+
+    // X-Ray Translucent Shell Toggle
+    let xrayOn = true;
+    const xrayBtn = document.getElementById('v3d-xray-btn');
+    xrayBtn?.addEventListener('click', () => {
+      xrayOn = !xrayOn;
+      xrayBtn.classList.toggle('active', xrayOn);
+      topShellMaterial.transparent = xrayOn;
+      topShellMaterial.opacity = xrayOn ? 0.32 : 0.94;
+      topShellMaterial.depthWrite = !xrayOn;
+      topShellMaterial.needsUpdate = true;
+
+      bottomShellMaterial.transparent = xrayOn;
+      bottomShellMaterial.opacity = xrayOn ? 0.48 : 0.96;
+      bottomShellMaterial.depthWrite = !xrayOn;
+      bottomShellMaterial.needsUpdate = true;
+    });
+
+    // Wireframe Toggle
+    let wireOn = false;
+    const wireBtn = document.getElementById('v3d-wire-btn');
+    wireBtn?.addEventListener('click', () => {
+      wireOn = !wireOn;
+      wireBtn.classList.toggle('active', wireOn);
+      assemblyRoot.traverse((obj) => {
+        if ((obj as THREE.Mesh).isMesh) {
+          const mat = (obj as THREE.Mesh).material;
+          if (Array.isArray(mat)) {
+            mat.forEach((m) => (m.wireframe = wireOn));
+          } else if (mat) {
+            (mat as THREE.MeshStandardMaterial).wireframe = wireOn;
+          }
+        }
+      });
+    });
+
+    // Auto-Rotate Toggle
+    const spinBtn = document.getElementById('v3d-autorotate-btn');
+    spinBtn?.addEventListener('click', () => {
+      controls.autoRotate = !controls.autoRotate;
+      spinBtn.classList.toggle('active', controls.autoRotate);
+    });
+
+    // Resize Handling
+    window.addEventListener('resize', () => {
+      if (!container) return;
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+
+    // Render Loop
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+  }
+</script>
+
+<style>
+  .viewer3d-card {
+    border: 2px solid var(--border-strong);
+    background: var(--bg-elevated);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+  }
+
+  .v3d-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 1rem;
+    background: var(--bg-subtle);
+    border-bottom: 1.5px solid var(--border-strong);
+    gap: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .v3d-mode-group {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+
+  .v3d-btn {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 500;
+    padding: 0.44rem 0.8rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-mid);
+    color: var(--ink-primary);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.15s ease;
+  }
+
+  .v3d-btn:hover {
+    border-color: var(--mint-accent);
+  }
+
+  .v3d-btn.active {
+    background: var(--badge-bg);
+    color: var(--badge-ink);
+    border-color: var(--badge-bg);
+    font-weight: 600;
+  }
+
+  .dot-indicator {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2dd4bf;
+    display: inline-block;
+  }
+
+  .v3d-slider-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-elevated);
+    color: var(--ink-primary);
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--border-mid);
+    font-size: 0.74rem;
+  }
+
+  .v3d-slider-group input[type='range'] {
+    width: 110px;
+    accent-color: var(--mint-dark);
+    cursor: pointer;
+  }
+
+  .v3d-camera-group {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+  }
+
+  .v3d-cam-btn {
+    font-family: var(--font-mono);
+    font-size: 0.73rem;
+    padding: 0.38rem 0.65rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-mid);
+    color: var(--ink-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .v3d-cam-btn:hover {
+    border-color: var(--mint-accent);
+    color: var(--ink-primary);
+  }
+
+  .v3d-cam-btn.active {
+    background: var(--mint-soft);
+    color: var(--mint-dark);
+    border-color: var(--mint-accent);
+    font-weight: 600;
+  }
+
+  .v3d-stage-wrap {
+    position: relative;
+    height: 540px;
+    width: 100%;
+    background: var(--bg-cad-stage);
+    overflow: hidden;
+  }
+
+  .v3d-canvas-container {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+  }
+
+  .v3d-canvas-container:active {
+    cursor: grabbing;
+  }
+
+  .v3d-loading {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-hud);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    z-index: 10;
+    font-size: 0.82rem;
+    color: var(--ink-primary);
+  }
+
+  .spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid var(--border-mid);
+    border-top-color: var(--mint-dark);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .v3d-hud-top-left {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    pointer-events: none;
+    background: var(--bg-hud);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--border-mid);
+    padding: 0.6rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .hud-tag {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--mint-dark);
+    letter-spacing: 0.05em;
+  }
+
+  .hud-dims {
+    display: flex;
+    flex-direction: column;
+    gap: 0.12rem;
+    font-size: 0.72rem;
+    color: var(--ink-secondary);
+  }
+
+  .v3d-hud-bottom-right {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.45rem;
+  }
+
+  .hud-dl-btn {
+    background: var(--bg-hud);
+    border: 1px solid var(--border-strong);
+    color: var(--ink-primary);
+    text-decoration: none;
+    font-size: 0.73rem;
+    font-weight: 600;
+    padding: 0.4rem 0.75rem;
+    transition: all 0.15s ease;
+  }
+
+  .hud-dl-btn:hover {
+    background: var(--badge-bg);
+    color: var(--badge-ink);
+  }
+
+  .v3d-footer {
+    padding: 0.55rem 1rem;
+    background: var(--bg-subtle);
+    border-top: 1px solid var(--border-mid);
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.73rem;
+    color: var(--ink-secondary);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .v3d-status-right {
+    color: var(--mint-dark);
+    font-weight: 600;
+  }
+</style>

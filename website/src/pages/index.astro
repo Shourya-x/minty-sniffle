@@ -1,0 +1,2214 @@
+---
+import DatasheetLayout from '../layouts/DatasheetLayout.astro';
+import Viewer3D from '../components/Viewer3D.astro';
+import {
+  projectMeta,
+  keyParameters,
+  subsystems,
+  bomItems,
+  pinoutItems,
+  buildLogChapters,
+  chatArchives,
+} from '../data/hardwareData';
+
+const bomCategories = ['All', 'IC / Module', 'Power & Latch', 'Passives', 'Connectors & UI', 'Test Points'];
+const pinoutGroups = ['All', 'MCU (Module 1)', 'Sensor & I2C Bus', 'Soft Power Latch', 'Power & Decoupling', 'Debug & Test Points'];
+
+const datasheetsList = [
+  {
+    name: 'ISC-nRF52840-A-DS-V2.1.pdf',
+    title: 'ISC-nRF52840-A BLE 5.0 Module Datasheet (v2.1)',
+    part: 'Module 1 (nRF52840)',
+    category: 'Microcontroller / RF',
+  },
+  {
+    name: 'ISC-nRF52840-A-MODULE Placement Guide.pdf',
+    title: 'ISC-nRF52840-A PCB Layout & Antenna Keepout Guide',
+    part: 'Module 1 (nRF52840)',
+    category: 'Layout Guidelines',
+  },
+  {
+    name: 'ISC_nRF52840_Reference Design.pdf',
+    title: 'ISC-nRF52840 Reference Schematic & Circuit Design',
+    part: 'Module 1 (nRF52840)',
+    category: 'Reference Design',
+  },
+  {
+    name: 'BME680.pdf',
+    title: 'Bosch BME680 Low-Power Gas, Pressure, Temp & Humidity Sensor',
+    part: 'U2 (BME680 / BME688)',
+    category: 'Environmental Sensor',
+  },
+  {
+    name: 'FM24CL16B.pdf',
+    title: 'Infineon FM24CL16B 16-Kbit (2K × 8) Serial I²C F-RAM',
+    part: 'U3 (FM24CL16B-GTR)',
+    category: 'Non-Volatile Memory',
+  },
+  {
+    name: 'SD3031.pdf',
+    title: 'Whwave SD3031 High-Precision I²C Real-Time Clock IC',
+    part: 'U4 (SD3031)',
+    category: 'Real-Time Clock',
+  },
+  {
+    name: 'sd3031-rtc-module_schematics_V1.0.pdf',
+    title: 'SD3031 RTC Reference Module Schematic (v1.0)',
+    part: 'U4 (SD3031)',
+    category: 'Reference Schematic',
+  },
+];
+---
+
+<DatasheetLayout title={`${projectMeta.title} — 3D Hardware Showcase & Technical Datasheet`}>
+  <!-- Top Sticky Laboratory Navigation Bar -->
+  <header class="lab-topbar no-print">
+    <div class="topbar-inner">
+      <div class="brand-cluster">
+        <span class="doc-badge">{projectMeta.documentNumber}</span>
+        <span class="brand-title">🍬👃 MINTY-SNIFFLE</span>
+        <span class="status-pill">● REV. A FINALIZED</span>
+      </div>
+
+      <nav class="section-tabs" aria-label="Datasheet Sections">
+        <a href="#sec-overview" class="tab-link active" data-section="sec-overview">01. Overview & Specs</a>
+        <a href="#sec-3d" class="tab-link" data-section="sec-3d">02. 3D Design Viewer</a>
+        <a href="#sec-architecture" class="tab-link" data-section="sec-architecture">03. Architecture & Latch</a>
+        <a href="#sec-cad" class="tab-link" data-section="sec-cad">04. 2D Schematic & PCB</a>
+        <a href="#sec-bom" class="tab-link" data-section="sec-bom">05. BOM ({bomItems.length})</a>
+        <a href="#sec-pinout" class="tab-link" data-section="sec-pinout">06. Pinout ({pinoutItems.length})</a>
+        <a href="#sec-log" class="tab-link" data-section="sec-log">07. Build Log & Chats</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <button id="theme-toggle-btn" onclick="window.__toggleMintyTheme && window.__toggleMintyTheme()" class="action-btn theme-btn" title="Switch between Light Datasheet and Dark Lab Theme">
+          <span id="theme-icon">🌙</span> <strong id="theme-label">Dark Mode</strong>
+        </button>
+        <button id="view-mode-btn" class="action-btn" title="Switch between continuous datasheet scroll and single-tab focus mode">
+          Mode: <strong id="view-mode-label">Full Datasheet</strong>
+        </button>
+        <button onclick="window.print()" class="action-btn primary-btn" title="Print or Save as PDF Datasheet">
+          ⎙ Print Spec
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="datasheet-container">
+    <!-- Datasheet Title Block Header -->
+    <section class="title-block">
+      <div class="title-block-top">
+        <div class="title-block-left">
+          <div class="eyebrow-row">
+            <span class="lab-tag">HARDWARE ENGINEERING ARCHIVE</span>
+            <span class="lab-divider">|</span>
+            <span class="mono">{projectMeta.origin}</span>
+            <span class="lab-divider">|</span>
+            <span class="mono">ERC & DRC: CLEAN</span>
+          </div>
+          <h1>{projectMeta.title}</h1>
+          <p class="subtitle">{projectMeta.subtitle}</p>
+        </div>
+        <div class="title-block-stamp">
+          <div class="stamp-box">
+            <div class="stamp-header">DOCUMENT CONTROL</div>
+            <div class="stamp-row"><span>DOC ID:</span> <strong>{projectMeta.documentNumber}</strong></div>
+            <div class="stamp-row"><span>TIMELINE:</span> <strong>{projectMeta.date}</strong></div>
+            <div class="stamp-row"><span>AUTHOR:</span> <strong>{projectMeta.author}</strong></div>
+            <div class="stamp-row"><span>WEB:</span> <a href={projectMeta.website} target="_blank" rel="noopener" class="stamp-link">shourya.page ↗</a></div>
+            <div class="stamp-row"><span>STATE:</span> <strong class="mint-text">PCB READY (REV. A)</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Engineering Summary Strip -->
+      <div class="summary-grid">
+        <div class="summary-cell">
+          <span class="cell-label">ENCLOSURE ENVELOPE</span>
+          <strong class="cell-value mono">{projectMeta.dimensions}</strong>
+          <span class="cell-sub">FreeCAD 1.1 parametric 1mm shell</span>
+        </div>
+        <div class="summary-cell">
+          <span class="cell-label">WIRELESS MCU</span>
+          <strong class="cell-value mono">ISC-nRF52840-A</strong>
+          <span class="cell-sub">Imported from vendor Altium libs</span>
+        </div>
+        <div class="summary-cell">
+          <span class="cell-label">SENSING CORE</span>
+          <strong class="cell-value mono">Bosch BME680/688</strong>
+          <span class="cell-sub">VOC Gas, Pressure, Temp & Humidity</span>
+        </div>
+        <div class="summary-cell">
+          <span class="cell-label">MEMORY & TIMEKEEPING</span>
+          <strong class="cell-value mono">16Kb F-RAM + RTC</strong>
+          <span class="cell-sub">FM24CL16B-GTR & SD3031 on shared I²C</span>
+        </div>
+        <div class="summary-cell">
+          <span class="cell-label">POWER ARCHITECTURE</span>
+          <strong class="cell-value mono">CR2477 + Soft Latch</strong>
+          <span class="cell-sub">3V 1000mAh + AO3401A/2N7002 Latch</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 01: OVERVIEW & ELECTRICAL SPECIFICATIONS -->
+    <section id="sec-overview" class="doc-section">
+      <div class="section-header">
+        <span class="section-num">SECTION 01</span>
+        <h2>System Overview & Electrical Specifications</h2>
+      </div>
+
+      <div class="two-col-overview">
+        <div class="prose-box">
+          <h3>1.1 Abstract & Engineering Story</h3>
+          <p>
+            <strong>Minty-Sniffle</strong> is a self-funded hardware engineering project by <strong>Shourya Pandey</strong> (<a href="https://shourya.page" target="_blank" rel="noopener">shourya.page</a>) built on Fedora Linux using <strong>FreeCAD 1.1</strong>, <strong>KiCad 10.0.6</strong>, and <strong>Copperhead.sh</strong>. Housed inside a custom <strong>50 mm × 30 mm × 15 mm</strong> 3D-printed louvered enclosure (the size of a slightly beefed-up Tic-Tac box), each node continuously monitors volatile organic compounds (VOCs), temperature, humidity, and barometric pressure.
+          </p>
+          <p>
+            By deploying multiple Minty-Sniffle nodes across a room, the network can triangulate gas leaks, detect early-stage fire precursors, and generate real-time environmental heatmaps via Bluetooth Low Energy (BLE) Mesh.
+          </p>
+
+          <h3>1.2 Finalized Rev. A Hardware Highlights</h3>
+          <ul class="spec-list">
+            <li>
+              <strong>High-Capacity Coin-Cell Delivery:</strong> Powered by a single <strong>CR2477 (3.0 V, ~1000 mAh)</strong> primary lithium coin cell in a <code>BH1000G</code> holder, buffered by a <strong>220 µF bulk reservoir capacitor (C1)</strong> and <strong>4.7 µF module bypass (C2)</strong> to handle Bosch BME680/688 hotplate heater pulses without browning out the MCU.
+            </li>
+            <li>
+              <strong>Circuit Cellar / Mosaic-Style MCU Soft Power Latch:</strong> Replaces physical slide switches with a zero-contention <strong>AO3401A PMOS (Q1) + 2N7002 NMOS (Q2) + Triple BAT54J Schottky (D3–D5)</strong> soft-latching switch controlled by <code>P0.04 (PWR_HOLD)</code> and <code>P0.05 (PWR_BUTTON)</code>.
+            </li>
+            <li>
+              <strong>Instant Non-Volatile State Preservation:</strong> Pairs an <strong>Infineon FM24CL16B-GTR 16-Kbit F-RAM (U3)</strong> with an <strong>SD3031 hardware RTC (U4)</strong> so state can be saved with zero flash-erase latency before the MCU powers itself off.
+            </li>
+            <li>
+              <strong>Hand-Routed 2-Layer PCB with Solid GND Pours:</strong> After testing and rejecting FreeRouting autorouter artifacts, every trace was hand-routed manually with stitched top and bottom <code>GND</code> copper pours and <code>TP1–TP7</code> probe pads for a 24MHz 8-channel USB Logic Analyzer (sigrok PulseView).
+            </li>
+          </ul>
+        </div>
+
+        <div class="board-preview-card">
+          <div class="preview-header">
+            <span class="mono">FIG 1.1 — RAYTRACED ISOMETRIC PCBA RENDER</span>
+            <a href="#sec-3d" class="mini-link">Launch Interactive 3D Viewer ↓</a>
+          </div>
+          <div class="preview-img-wrap">
+            <img src="/renders/pcb-3d-iso.png" alt="Minty-Sniffle 3D Isometric PCB Render" loading="lazy" />
+          </div>
+          <div class="preview-caption">
+            <span><strong>Envelope:</strong> 50 × 30 × 15 mm</span>
+            <span><strong>Debug:</strong> Tag-Connect TC2030 + TP1–TP7</span>
+            <span><strong>Routing:</strong> 100% Manual</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table 1.1: Electrical & Operating Characteristics -->
+      <div class="table-block">
+        <div class="table-caption">
+          <span>TABLE 1.1 — SYSTEM OPERATING RATINGS & ELECTRICAL CHARACTERISTICS (T<sub>A</sub> = 25 °C, V<sub>BAT+</sub> = 3.0 V NOMINAL)</span>
+        </div>
+        <div class="table-scroll">
+          <table class="datasheet-table">
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Symbol</th>
+                <th>Min</th>
+                <th>Typ</th>
+                <th>Max</th>
+                <th>Unit</th>
+                <th>Test Conditions / Engineering Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {keyParameters.map((row) => (
+                <tr>
+                  <td><strong>{row.parameter}</strong></td>
+                  <td class="mono">{row.symbol}</td>
+                  <td class="mono num-col">{row.min}</td>
+                  <td class="mono num-col highlight-cell">{row.typ}</td>
+                  <td class="mono num-col">{row.max}</td>
+                  <td class="mono">{row.unit}</td>
+                  <td class="notes-col">{row.conditions}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 02: INTERACTIVE 3D HARDWARE & ENCLOSURE VIEWER -->
+    <section id="sec-3d" class="doc-section">
+      <div class="section-header">
+        <span class="section-num">SECTION 02</span>
+        <h2>Interactive 3D Hardware & Enclosure Studio (ECAD + MCAD)</h2>
+      </div>
+      <p class="section-lead">
+        Inspect the complete 3D hardware assembly directly in your browser. This WebGL viewer combines the exported KiCad 3D PCBA model (<code>minty-sniffle-pcba.glb</code> with STEP models for the ISC-nRF52840-A module, Bosch BME680, FM24CL16B F-RAM, BH1000G coin-cell holder, Omron B3U-1000P switches, and SOT-23/SOD-323 soft-latch array) with the <code>50 × 30 × 15 mm</code> 1.0 mm-wall louvered enclosure defined in <code>Enclosure.FCStd</code>.
+      </p>
+
+      <Viewer3D />
+
+      <div class="mcad-renders-strip">
+        <div class="render-tile">
+          <div class="render-tile-head mono">FIG 2.1 — ISOMETRIC 3D RAYTRACE</div>
+          <img src="/renders/pcb-3d-iso.png" alt="Isometric 3D PCBA Render" loading="lazy" />
+        </div>
+        <div class="render-tile">
+          <div class="render-tile-head mono">FIG 2.2 — TOP COMPONENT ASSEMBLY</div>
+          <img src="/renders/pcb-3d-top.png" alt="Top 3D PCBA Render" loading="lazy" />
+        </div>
+        <div class="render-tile">
+          <div class="render-tile-head mono">FIG 2.3 — BOTTOM SOLDER SIDE</div>
+          <img src="/renders/pcb-3d-bottom.png" alt="Bottom 3D PCBA Render" loading="lazy" />
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 03: HARDWARE ARCHITECTURE & SOFT-POWER LATCH SIMULATOR -->
+    <section id="sec-architecture" class="doc-section">
+      <div class="section-header">
+        <span class="section-num">SECTION 03</span>
+        <h2>Hardware Architecture & MCU Soft-Power Latch</h2>
+      </div>
+
+      <!-- Interactive Soft-Power Latch State Explorer -->
+      <div class="latch-simulator-box">
+        <div class="sim-header">
+          <div>
+            <span class="sim-badge">INTERACTIVE CIRCUIT WALKTHROUGH</span>
+            <h3>3.1 AO3401A / 2N7002 / BAT54J Soft-Power Latch Operation</h3>
+            <p>Select an operating phase below to inspect signal states, MOSFET conduction, and diode isolation paths across the finalized power latch.</p>
+          </div>
+          <div class="sim-buttons" role="tablist">
+            <button class="sim-step-btn active" data-step="0">1. Default OFF (Battery Inserted)</button>
+            <button class="sim-step-btn" data-step="1">2. Momentary Press (SW3 Startup)</button>
+            <button class="sim-step-btn" data-step="2">3. Firmware Hold (Normal Run)</button>
+            <button class="sim-step-btn" data-step="3">4. Runtime Press & Shutdown</button>
+          </div>
+        </div>
+
+        <div class="sim-body">
+          <div class="sim-diagram">
+            <div class="net-cards-grid">
+              <div class="net-state-card" id="net-bat">
+                <span class="net-name">BAT+ (CR2477)</span>
+                <strong class="net-val" data-val>3.00 V</strong>
+                <span class="net-desc" data-desc>Raw coin-cell supply</span>
+              </div>
+              <div class="net-state-card" id="net-pmos-gate">
+                <span class="net-name">PMOS_GATE (Q1.G)</span>
+                <strong class="net-val" data-val>3.00 V (HIGH)</strong>
+                <span class="net-desc" data-desc>Pulled to BAT+ via R6 (100kΩ) & C9</span>
+              </div>
+              <div class="net-state-card" id="net-q1">
+                <span class="net-name">Q1 (AO3401A PMOS)</span>
+                <strong class="net-val" data-val>OFF (OPEN)</strong>
+                <span class="net-desc" data-desc>V_GS = 0V → High-side open</span>
+              </div>
+              <div class="net-state-card" id="net-sys-vbat">
+                <span class="net-name">SYS_VBAT (System Rail)</span>
+                <strong class="net-val" data-val>≤ 0.14 V (OFF)</strong>
+                <span class="net-desc" data-desc>Bleed resistor R11 (100kΩ) clamps ghost V</span>
+              </div>
+              <div class="net-state-card" id="net-pwr-hold">
+                <span class="net-name">P0.04 (PWR_HOLD)</span>
+                <strong class="net-val" data-val>0 V (Unpowered)</strong>
+                <span class="net-desc" data-desc>D3 blocks reverse path</span>
+              </div>
+              <div class="net-state-card" id="net-q2">
+                <span class="net-name">Q2 (2N7002 NMOS)</span>
+                <strong class="net-val" data-val>OFF (OPEN)</strong>
+                <span class="net-desc" data-desc>NMOS_GATE pulled to GND via R7 (100kΩ)</span>
+              </div>
+              <div class="net-state-card" id="net-sw3">
+                <span class="net-name">SW3 (START_BUTTON)</span>
+                <strong class="net-val" data-val>OPEN (Released)</strong>
+                <span class="net-desc" data-desc>Normally-open tactile switch</span>
+              </div>
+              <div class="net-state-card" id="net-pwr-btn">
+                <span class="net-name">P0.05 (PWR_BUTTON)</span>
+                <strong class="net-val" data-val>0 V (Unpowered)</strong>
+                <span class="net-desc" data-desc>D5 blocks battery-side backfeed</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sim-explanation">
+            <div class="sim-step-tag" id="sim-step-title">PHASE 1 — BATTERY INSERTION (DEFAULT OFF)</div>
+            <p id="sim-step-text">
+              When the CR2477 cell is inserted into <code>BT1</code>, both <code>R6 (100 kΩ)</code> and <code>C9 (100 nF)</code> are connected gate-to-source across <code>Q1 (BAT+ to PMOS_GATE)</code>. Because <code>C9</code> is referenced to <code>BAT+</code> rather than ground, battery insertion causes <code>PMOS_GATE</code> to track <code>BAT+</code> immediately, preventing any spurious turn-on pulse. Simultaneously, <code>R7 (100 kΩ)</code> holds <code>NMOS_GATE</code> at <code>0 V</code>, keeping <code>Q2</code> OFF. Meanwhile, <code>R11 (100 kΩ)</code> bleeds <code>SYS_VBAT</code> to ground so the preserved raw-battery divider (<code>R4/R5</code> on <code>P0.02</code>) cannot float the unpowered rail above <code>0.164 V</code>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subsystem Cards Grid -->
+      <h3 class="sub-heading">3.2 Finalized Schematic Subsystems (Sheet /)</h3>
+      <div class="subsystem-grid">
+        {subsystems.map((sub) => (
+          <article class="subsystem-card">
+            <div class="sub-card-top">
+              <span class="sub-code mono">{sub.code}</span>
+              <div class="sub-refs">
+                {sub.refs.map((r) => (
+                  <span class="ref-chip mono">{r}</span>
+                ))}
+              </div>
+            </div>
+            <h4>{sub.title}</h4>
+            <p class="sub-summary">{sub.summary}</p>
+            <div class="sub-kv-grid">
+              {sub.keySpecs.map((kv) => (
+                <div class="kv-item">
+                  <span class="kv-label">{kv.label}</span>
+                  <strong class="kv-val mono">{kv.value}</strong>
+                </div>
+              ))}
+            </div>
+            <ul class="sub-details">
+              {sub.details.map((d) => (
+                <li>{d}</li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <!-- SECTION 04: INTERACTIVE 2D SCHEMATIC & PCB LAYER EXPLORER -->
+    <section id="sec-cad" class="doc-section">
+      <div class="section-header">
+        <span class="section-num">SECTION 04</span>
+        <h2>2D Schematic Diagram & Hand-Routed Copper Layer Plot Viewer</h2>
+      </div>
+
+      <div class="cad-viewer-wrapper">
+        <div class="cad-toolbar">
+          <div class="cad-layer-tabs" role="tablist">
+            <button class="cad-tab active" data-src="/renders/schematic.svg" data-type="svg" data-caption="Finalized KiCad Schematic (Minty-sniffle.kicad_sch • Commit f7430a7) — Native ISC-nRF52840-A + Soft-Power Latch">
+              Schematic Diagram (SVG)
+            </button>
+            <button class="cad-tab" data-src="/renders/pcb-all.svg" data-type="svg" data-caption="Combined Multi-Layer Routing: F.Cu + B.Cu + SilkS + Notched 50.40×30.06mm Edge.Cuts (462 Segments, 45 Vias)">
+              Combined Routing (F.Cu + B.Cu)
+            </button>
+            <button class="cad-tab" data-src="/renders/pcb-top.svg" data-type="svg" data-caption="PCB Top Layers: F.Cu, F.SilkS, F.Mask, Edge.Cuts (13.52×4.33mm RF Antenna Notch + Top SMD Components)">
+              PCB Top Copper & Silk (SVG)
+            </button>
+            <button class="cad-tab" data-src="/renders/pcb-bottom.svg" data-type="svg" data-caption="PCB Bottom Layers: B.Cu, B.SilkS, B.Mask, Edge.Cuts (BH1000G CR2477 Holder + R&D in Bharat Signature)">
+              PCB Bottom Copper (SVG)
+            </button>
+            <button class="cad-tab" data-src="/renders/pcb-3d-iso.png" data-type="img" data-caption="KiCad 3D Raytraced Isometric PCBA View (All 42 Components & STEP Models)">
+              Isometric 3D Render (PNG)
+            </button>
+          </div>
+
+          <div class="cad-controls">
+            <button id="zoom-out-btn" class="ctrl-btn" title="Zoom Out">−</button>
+            <span id="zoom-level" class="mono zoom-readout">100%</span>
+            <button id="zoom-in-btn" class="ctrl-btn" title="Zoom In">+</button>
+            <button id="zoom-reset-btn" class="ctrl-btn" title="Reset View">Reset</button>
+            <a id="cad-open-raw" href="/renders/schematic.svg" target="_blank" rel="noopener" class="ctrl-btn link-btn">
+              ↗ Open Fullscreen File
+            </a>
+          </div>
+        </div>
+
+        <div id="cad-viewport" class="cad-viewport" title="Drag to pan, use buttons or Ctrl+Scroll to zoom">
+          <div id="cad-canvas" class="cad-canvas">
+            <img id="cad-image" src="/renders/schematic.svg" alt="Minty-Sniffle Technical Drawing" draggable="false" />
+          </div>
+        </div>
+
+        <div class="cad-footer">
+          <span id="cad-caption" class="mono">Full Finalized KiCad Schematic (Minty-sniffle.kicad_sch) — Post Soft-Latch Integration</span>
+          <span class="cad-hint">Tip: Click & drag inside the viewport to pan; use + / − buttons to inspect net labels and pin numbers.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 05: BILL OF MATERIALS (BOM) -->
+    <section id="sec-bom" class="doc-section">
+      <div class="section-header">
+        <span class="section-num">SECTION 05</span>
+        <h2>Complete Bill of Materials (BOM)</h2>
+      </div>
+
+      <div class="filter-bar">
+        <div class="category-pills" id="bom-category-pills">
+          {bomCategories.map((cat, idx) => (
+            <button class={`pill-btn ${idx === 0 ? 'active' : ''}`} data-category={cat}>
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        <div class="search-and-export">
+          <input
+            type="search"
+            id="bom-search"
+            class="lab-search"
+            placeholder="Filter by Refdes (Q1, U2, C1), value (100k, BME680), or rationale..."
+          />
+          <button id="export-bom-csv" class="action-btn">⬇ Export BOM (.CSV)</button>
+        </div>
+      </div>
+
+      <div class="table-block">
+        <div class="table-caption">
+          <span>TABLE 5.1 — SYNCHRONIZED SCHEMATIC BILL OF MATERIALS (<span id="bom-count">{bomItems.length}</span> OF {bomItems.length} COMPONENTS SHOWN)</span>
+        </div>
+        <div class="table-scroll">
+          <table class="datasheet-table" id="bom-table">
+            <thead>
+              <tr>
+                <th>Refdes</th>
+                <th>Value</th>
+                <th>Category</th>
+                <th>Subsystem Group</th>
+                <th>Package / Footprint</th>
+                <th>Design Rationale & Circuit Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bomItems.map((item) => (
+                <tr class="bom-row" data-category={item.category} data-search={`${item.refdes} ${item.value} ${item.footprint} ${item.subsystem} ${item.rationale}`.toLowerCase()}>
+                  <td class="mono"><strong>{item.refdes}</strong></td>
+                  <td class="mono highlight-cell">{item.value}</td>
+                  <td><span class="cat-tag">{item.category}</span></td>
+                  <td class="mono">{item.subsystem}</td>
+                  <td class="mono muted-cell">{item.footprint || 'Standard SMD'}</td>
+                  <td class="notes-col">{item.rationale}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 06: PINOUT & NET MATRIX -->
+    <section id="sec-pinout" class="doc-section">
+      <div class="section-header">
+        <span class="section-num">SECTION 06</span>
+        <h2>Pinout & Net Connectivity Matrix</h2>
+      </div>
+
+      <div class="filter-bar">
+        <div class="category-pills" id="pinout-group-pills">
+          {pinoutGroups.map((grp, idx) => (
+            <button class={`pill-btn ${idx === 0 ? 'active' : ''}`} data-group={grp}>
+              {grp}
+            </button>
+          ))}
+        </div>
+
+        <div class="search-and-export">
+          <input
+            type="search"
+            id="pinout-search"
+            class="lab-search"
+            placeholder="Search net (SYS_VBAT, SDA, PWR_HOLD, BAT_ADC) or pin (P0.04)..."
+          />
+        </div>
+      </div>
+
+      <div class="table-block">
+        <div class="table-caption">
+          <span>TABLE 6.1 — COMPLETE SCHEMATIC PIN-TO-NET ASSIGNMENT TABLE (<span id="pinout-count">{pinoutItems.length}</span> ENTRIES)</span>
+        </div>
+        <div class="table-scroll">
+          <table class="datasheet-table" id="pinout-table">
+            <thead>
+              <tr>
+                <th>Component / Refdes</th>
+                <th>Pin #</th>
+                <th>Pin Name</th>
+                <th>Assigned Schematic Net</th>
+                <th>Subsystem Group</th>
+                <th>Engineering Notes & Strapping</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pinoutItems.map((pin) => (
+                <tr class="pinout-row" data-group={pin.group} data-search={`${pin.refdes} ${pin.pin} ${pin.name} ${pin.net} ${pin.group} ${pin.notes}`.toLowerCase()}>
+                  <td class="mono"><strong>{pin.refdes}</strong></td>
+                  <td class="mono">{pin.pin}</td>
+                  <td class="mono">{pin.name}</td>
+                  <td class="mono"><span class="net-badge">{pin.net}</span></td>
+                  <td>{pin.group}</td>
+                  <td class="notes-col">{pin.notes}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 07: THE REAL BUILD LOG, AI SESSION ARCHIVES & DATASHEETS -->
+    <section id="sec-log" class="doc-section">
+      <div class="section-header">
+        <span class="section-num">SECTION 07</span>
+        <h2>The Real Engineering Build Log, AI Session Archives & Datasheets</h2>
+      </div>
+
+      <p class="section-lead">
+        From the first commit on <strong>August 25, 2026</strong> to the final hand-routed PCB commit on <strong>October 14, 2026 at 22:20 IST</strong> (<code>f91bda2</code>), here is the chronological build log reconstructed directly from the Git repository, FreeCAD/KiCad files, and the 4 original engineering chat sessions.
+      </p>
+
+      <!-- Original AI Engineering Chat Archives Strip -->
+      <div class="chat-archives-grid">
+        {chatArchives.map((chat) => (
+          <a href={chat.url} target="_blank" rel="noopener" class="chat-archive-card">
+            <div class="chat-card-top">
+              <span class="mono chat-id-badge">{chat.id}</span>
+              <span class="mono chat-platform">{chat.platform} Session ↗</span>
+            </div>
+            <h4>{chat.title}</h4>
+            <p>{chat.description}</p>
+          </a>
+        ))}
+      </div>
+
+      <div class="two-col-log">
+        <div>
+          <h3 class="sub-heading">7.1 Chronological Hardware Build Log (Aug – Oct 2026)</h3>
+          <div class="timeline-list">
+            {buildLogChapters.map((chap) => (
+              <article class="timeline-card">
+                <div class="timeline-meta">
+                  <span class="mono date-chip">{chap.phase} • {chap.date}</span>
+                  <span class="mono run-chip">{chap.commitOrTag}</span>
+                </div>
+                <h4>{chap.title}</h4>
+                <p class="chap-sub">{chap.subtitle}</p>
+                {chap.story.map((p) => (
+                  <p>{p}</p>
+                ))}
+                {chap.QuoteOrTerminal && (
+                  <blockquote class="terminal-quote mono">
+                    {chap.QuoteOrTerminal}
+                  </blockquote>
+                )}
+                <ul class="chap-highlights">
+                  {chap.highlights.map((h) => (
+                    <li>{h}</li>
+                  ))}
+                </ul>
+                {chap.chatLink && (
+                  <div class="chap-footer">
+                    <a href={chap.chatLink.url} target="_blank" rel="noopener" class="chap-link mono">
+                      Read Original Session: {chap.chatLink.label}
+                    </a>
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <!-- PCB Silkscreen Signature Card -->
+          <h3 class="sub-heading">7.2 PCB Silkscreen Signature Block</h3>
+          <div class="silkscreen-sig-box">
+            <div class="sig-label mono">F.SilkS / B.SilkS MICRO-SIGNATURE (0.8mm HEIGHT)</div>
+            <pre class="sig-code mono">Minty Sniffle
+Rev. A
+© 2026
+Shourya Pandey
+shourya.page
+github.com/Shourya-x
+R&amp;D in Bharat</pre>
+          </div>
+
+          <h3 class="sub-heading">7.3 Component Datasheets Vault (PDF)</h3>
+          <div class="datasheet-vault">
+            <p class="vault-intro">
+              All reference component datasheets and placement guides archived from the repository <code>/datasheets/</code> directory:
+            </p>
+            <div class="pdf-list">
+              {datasheetsList.map((pdf) => (
+                <a href={`/datasheets/${pdf.name}`} target="_blank" rel="noopener" class="pdf-card">
+                  <div class="pdf-icon">PDF</div>
+                  <div class="pdf-info">
+                    <strong>{pdf.title}</strong>
+                    <div class="pdf-meta">
+                      <span class="mono">{pdf.part}</span>
+                      <span>•</span>
+                      <span>{pdf.category}</span>
+                    </div>
+                  </div>
+                  <span class="pdf-arrow">↗</span>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div class="erc-policy-box">
+            <h4>7.4 Final ERC & DRC Sign-Off Summary</h4>
+            <p>
+              <strong>Schematic ERC:</strong> 0 electrical errors after integrating the <code>AO3401A + 2N7002 + BAT54J</code> soft-power latch and reconciling custom module/F-RAM/RTC symbol libraries.<br /><br />
+              <strong>PCB Layout & DRC:</strong> 100% manually routed 2-layer PCB (FreeRouting discarded). Resolved all 50 initial DRC track-width (<code>0.150mm → ≥0.200mm</code>) and <code>1.5mm</code> outline stroke violations, with stitched solid <code>GND</code> copper pours across top and bottom layers.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="datasheet-footer">
+    <div class="footer-inner">
+      <div>
+        <strong>🍬👃 MINTY-SNIFFLE (REV. A)</strong> — Designed & Engineered by <a href="https://shourya.page" target="_blank" rel="noopener" class="footer-link">{projectMeta.author}</a> • <a href="https://github.com/Shourya-x/minty-sniffle" target="_blank" rel="noopener" class="footer-link">github.com/Shourya-x</a> • R&amp;D in Bharat
+      </div>
+      <div class="mono">
+        DOC: {projectMeta.documentNumber} • BUILT WITH ASTRO & THREE.JS
+      </div>
+    </div>
+  </footer>
+</DatasheetLayout>
+
+<script>
+  // 1. Soft-Power Latch Interactive State Simulator
+  const latchStates = [
+    {
+      title: 'PHASE 1 — BATTERY INSERTION (DEFAULT OFF)',
+      text: 'When the CR2477 cell is inserted into BT1, both R6 (100 kΩ) and C9 (100 nF) are connected gate-to-source across Q1 (BAT+ to PMOS_GATE). Because C9 is referenced to BAT+ rather than ground, battery insertion causes PMOS_GATE to track BAT+ immediately, preventing any spurious turn-on pulse. Simultaneously, R7 (100 kΩ) holds NMOS_GATE at 0 V, keeping Q2 OFF. R11 (100 kΩ) bleeds SYS_VBAT to ground so the preserved raw-battery divider (R4/R5 on P0.02) cannot float the unpowered rail above 0.164 V.',
+      nets: {
+        'net-bat': { val: '3.00 V', desc: 'Raw CR2477 supply present', state: 'normal' },
+        'net-pmos-gate': { val: '3.00 V (HIGH)', desc: 'Pulled to BAT+ via R6 & C9', state: 'normal' },
+        'net-q1': { val: 'OFF (OPEN)', desc: 'V_GS = 0 V → Channel open', state: 'off' },
+        'net-sys-vbat': { val: '≤ 0.14 V (OFF)', desc: 'Clamped by R11 (100kΩ) bleed', state: 'off' },
+        'net-pwr-hold': { val: '0 V (Unpowered)', desc: 'MCU unpowered; D3 isolates', state: 'off' },
+        'net-q2': { val: 'OFF (OPEN)', desc: 'Pulled down by R7 (100kΩ)', state: 'off' },
+        'net-sw3': { val: 'OPEN (Released)', desc: 'Waiting for user press', state: 'normal' },
+        'net-pwr-btn': { val: '0 V (Unpowered)', desc: 'Blocked by D5 Schottky', state: 'off' },
+      },
+    },
+    {
+      title: 'PHASE 2 — MOMENTARY BUTTON PRESS (SW3 STARTUP)',
+      text: 'Pressing SW3 ties START_BUTTON to GND. Current flows from PMOS_GATE through Schottky diode D4 (BAT54J) to GND, pulling PMOS_GATE down to ~0.3 V. With V_GS ≈ -2.7 V, high-side PMOS Q1 (AO3401A) turns ON hard, energizing SYS_VBAT to 3.0 V and charging the 220 µF bulk capacitor C1. The nRF52840 module begins its boot sequence while the user holds SW3.',
+      nets: {
+        'net-bat': { val: '3.00 V', desc: 'Supplying startup inrush', state: 'active' },
+        'net-pmos-gate': { val: '~0.30 V (LOW)', desc: 'Sunk through D4 & SW3 to GND', state: 'active' },
+        'net-q1': { val: 'ON (CONDUCTING)', desc: 'V_GS ≈ -2.7 V → Low R_DS(on)', state: 'active' },
+        'net-sys-vbat': { val: '3.00 V (ON)', desc: 'Rail energized; MCU booting', state: 'active' },
+        'net-pwr-hold': { val: 'BOOTING → HIGH', desc: 'Firmware configuring P0.04', state: 'warn' },
+        'net-q2': { val: 'TRANSITIONING ON', desc: 'Awaiting P0.04 HIGH assertion', state: 'warn' },
+        'net-sw3': { val: 'PRESSED (GND)', desc: 'START_BUTTON tied to GND', state: 'active' },
+        'net-pwr-btn': { val: '~0.30 V (LOW)', desc: 'Pulled LOW via D5 during press', state: 'active' },
+      },
+    },
+    {
+      title: 'PHASE 3 — FIRMWARE LATCH HOLD (NORMAL CONTINUOUS OPERATION)',
+      text: 'Early in boot, nRF52840 firmware asserts P0.04 (PWR_HOLD) HIGH (3.0 V). Current flows through R9 (1 kΩ) and Schottky diode D3 into NMOS_GATE, turning Q2 (2N7002) ON. Once the user releases SW3, Q2 continues sinking PMOS_GATE to 0 V, keeping Q1 latched ON indefinitely. R10 (100 kΩ) pulls P0.05 (PWR_BUTTON) HIGH to SYS_VBAT while D5 blocks the battery-side gate node.',
+      nets: {
+        'net-bat': { val: '3.00 V', desc: 'Nominal coin-cell operation', state: 'active' },
+        'net-pmos-gate': { val: '0.02 V (LOW)', desc: 'Held LOW by Q2 drain', state: 'active' },
+        'net-q1': { val: 'LATCHED ON', desc: 'Held ON via Q2 sink path', state: 'active' },
+        'net-sys-vbat': { val: '3.00 V (ACTIVE)', desc: 'Powering MCU, BME680, F-RAM, RTC', state: 'active' },
+        'net-pwr-hold': { val: '3.00 V (HIGH)', desc: 'Asserted by P0.04 output', state: 'active' },
+        'net-q2': { val: 'ON (SINKING)', desc: 'NMOS_GATE ≈ 2.7 V via R9 & D3', state: 'active' },
+        'net-sw3': { val: 'OPEN (Released)', desc: 'Available for user input', state: 'normal' },
+        'net-pwr-btn': { val: '3.00 V (HIGH)', desc: 'Pulled to SYS_VBAT via R10 (100kΩ)', state: 'normal' },
+      },
+    },
+    {
+      title: 'PHASE 4 — RUNTIME BUTTON SENSE & GRACEFUL FIRMWARE SHUTDOWN',
+      text: 'When the user presses SW3 during runtime, D5 conducts and pulls P0.05 (PWR_BUTTON) active LOW without disturbing Q2’s hold on PMOS_GATE (isolated by D3/D4). Firmware detects P0.05 LOW, writes final environmental state to FM24CL16B F-RAM (U3), cleanly disconnects BLE Mesh, waits for SW3 release, and drives P0.04 (PWR_HOLD) LOW. Q2 turns OFF, R6 pulls PMOS_GATE back to BAT+, Q1 opens, and R11 discharges C1 (τ ≈ 22 s).',
+      nets: {
+        'net-bat': { val: '3.00 V', desc: 'Isolated from system load', state: 'normal' },
+        'net-pmos-gate': { val: '→ 3.00 V (HIGH)', desc: 'Restored HIGH via R6 (100kΩ)', state: 'warn' },
+        'net-q1': { val: 'TURNING OFF', desc: 'High-side switch opens cleanly', state: 'off' },
+        'net-sys-vbat': { val: 'DISCHARGING → 0V', desc: 'C1 (220µF) bleeds via R11 (τ=22s)', state: 'warn' },
+        'net-pwr-hold': { val: 'Driven 0 V (LOW)', desc: 'Firmware releases latch after F-RAM save', state: 'off' },
+        'net-q2': { val: 'OFF (OPEN)', desc: 'R7 discharges NMOS_GATE to GND', state: 'off' },
+        'net-sw3': { val: 'RELEASED', desc: 'Firmware verified release before cut', state: 'normal' },
+        'net-pwr-btn': { val: 'SENSED LOW → OFF', desc: 'Triggered graceful shutdown routine', state: 'warn' },
+      },
+    },
+  ];
+
+  const simBtns = document.querySelectorAll('.sim-step-btn');
+  const simTitle = document.getElementById('sim-step-title');
+  const simText = document.getElementById('sim-step-text');
+
+  simBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      simBtns.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      const idx = Number(btn.getAttribute('data-step') || 0);
+      const step = latchStates[idx];
+      if (simTitle) simTitle.textContent = step.title;
+      if (simText) simText.textContent = step.text;
+
+      Object.entries(step.nets).forEach(([id, info]) => {
+        const card = document.getElementById(id);
+        if (!card) return;
+        card.setAttribute('data-state', info.state);
+        const valEl = card.querySelector('[data-val]');
+        const descEl = card.querySelector('[data-desc]');
+        if (valEl) valEl.textContent = info.val;
+        if (descEl) descEl.textContent = info.desc;
+      });
+    });
+  });
+
+  // 2. Interactive Schematic & PCB CAD Viewer (Zoom, Pan, Layer Switch)
+  let scale = 1;
+  let panX = 0;
+  let panY = 0;
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+
+  const viewport = document.getElementById('cad-viewport');
+  const canvas = document.getElementById('cad-canvas');
+  const cadImage = document.getElementById('cad-image') as HTMLImageElement | null;
+  const cadCaption = document.getElementById('cad-caption');
+  const cadOpenRaw = document.getElementById('cad-open-raw') as HTMLAnchorElement | null;
+  const zoomReadout = document.getElementById('zoom-level');
+
+  function updateTransform() {
+    if (canvas) {
+      canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+    }
+    if (zoomReadout) {
+      zoomReadout.textContent = `${Math.round(scale * 100)}%`;
+    }
+  }
+
+  document.getElementById('zoom-in-btn')?.addEventListener('click', () => {
+    scale = Math.min(scale * 1.25, 5);
+    updateTransform();
+  });
+
+  document.getElementById('zoom-out-btn')?.addEventListener('click', () => {
+    scale = Math.max(scale / 1.25, 0.4);
+    updateTransform();
+  });
+
+  document.getElementById('zoom-reset-btn')?.addEventListener('click', () => {
+    scale = 1;
+    panX = 0;
+    panY = 0;
+    updateTransform();
+  });
+
+  viewport?.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    startX = e.clientX - panX;
+    startY = e.clientY - panY;
+    viewport.classList.add('grabbing');
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    panX = e.clientX - startX;
+    panY = e.clientY - startY;
+    updateTransform();
+  });
+
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+    viewport?.classList.remove('grabbing');
+  });
+
+  viewport?.addEventListener(
+    'wheel',
+    (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.15 : 0.87;
+        scale = Math.min(Math.max(scale * factor, 0.4), 5);
+        updateTransform();
+      }
+    },
+    { passive: false }
+  );
+
+  document.querySelectorAll('.cad-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.cad-tab').forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      const src = tab.getAttribute('data-src') || '/renders/schematic.svg';
+      const caption = tab.getAttribute('data-caption') || '';
+      if (cadImage) cadImage.src = src;
+      if (cadCaption) cadCaption.textContent = caption;
+      if (cadOpenRaw) cadOpenRaw.href = src;
+      scale = 1;
+      panX = 0;
+      panY = 0;
+      updateTransform();
+    });
+  });
+
+  // 3. BOM Filter, Search & CSV Export
+  let activeBomCategory = 'All';
+  const bomSearchInput = document.getElementById('bom-search') as HTMLInputElement | null;
+  const bomRows = document.querySelectorAll('.bom-row');
+  const bomCountEl = document.getElementById('bom-count');
+
+  function filterBom() {
+    const query = (bomSearchInput?.value || '').trim().toLowerCase();
+    let visible = 0;
+    bomRows.forEach((row) => {
+      const cat = row.getAttribute('data-category') || '';
+      const searchStr = row.getAttribute('data-search') || '';
+      const matchesCat = activeBomCategory === 'All' || cat === activeBomCategory;
+      const matchesQuery = !query || searchStr.includes(query);
+      if (matchesCat && matchesQuery) {
+        (row as HTMLElement).style.display = '';
+        visible++;
+      } else {
+        (row as HTMLElement).style.display = 'none';
+      }
+    });
+    if (bomCountEl) bomCountEl.textContent = String(visible);
+  }
+
+  document.querySelectorAll('#bom-category-pills .pill-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#bom-category-pills .pill-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeBomCategory = btn.getAttribute('data-category') || 'All';
+      filterBom();
+    });
+  });
+
+  bomSearchInput?.addEventListener('input', filterBom);
+
+  document.getElementById('export-bom-csv')?.addEventListener('click', () => {
+    const headers = ['Refdes', 'Value', 'Category', 'Subsystem', 'Footprint', 'Rationale'];
+    const csvRows = [headers.join(',')];
+    bomRows.forEach((row) => {
+      if ((row as HTMLElement).style.display === 'none') return;
+      const cells = Array.from(row.querySelectorAll('td')).map((td) =>
+        `"${(td.textContent || '').trim().replace(/"/g, '""')}"`
+      );
+      csvRows.push(cells.join(','));
+    });
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Minty-Sniffle-BOM.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // 4. Pinout Filter & Search
+  let activePinGroup = 'All';
+  const pinSearchInput = document.getElementById('pinout-search') as HTMLInputElement | null;
+  const pinRows = document.querySelectorAll('.pinout-row');
+  const pinCountEl = document.getElementById('pinout-count');
+
+  function filterPinout() {
+    const query = (pinSearchInput?.value || '').trim().toLowerCase();
+    let visible = 0;
+    pinRows.forEach((row) => {
+      const grp = row.getAttribute('data-group') || '';
+      const searchStr = row.getAttribute('data-search') || '';
+      const matchesGrp = activePinGroup === 'All' || grp === activePinGroup;
+      const matchesQuery = !query || searchStr.includes(query);
+      if (matchesGrp && matchesQuery) {
+        (row as HTMLElement).style.display = '';
+        visible++;
+      } else {
+        (row as HTMLElement).style.display = 'none';
+      }
+    });
+    if (pinCountEl) pinCountEl.textContent = String(visible);
+  }
+
+  document.querySelectorAll('#pinout-group-pills .pill-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#pinout-group-pills .pill-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      activePinGroup = btn.getAttribute('data-group') || 'All';
+      filterPinout();
+    });
+  });
+
+  pinSearchInput?.addEventListener('input', filterPinout);
+
+  // 5. Section Navigation & Optional Single-Tab Focus Mode
+  let singleSectionMode = false;
+  const viewModeBtn = document.getElementById('view-mode-btn');
+  const viewModeLabel = document.getElementById('view-mode-label');
+  const docSections = document.querySelectorAll('.doc-section');
+  const tabLinks = document.querySelectorAll('.tab-link');
+
+  function showSection(sectionId: string) {
+    tabLinks.forEach((link) => {
+      link.classList.toggle('active', link.getAttribute('data-section') === sectionId);
+    });
+    if (singleSectionMode) {
+      docSections.forEach((sec) => {
+        (sec as HTMLElement).style.display = sec.id === sectionId ? 'block' : 'none';
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  tabLinks.forEach((link) => {
+    link.addEventListener('click', (e) => {
+      const targetId = link.getAttribute('data-section');
+      if (!targetId) return;
+      if (singleSectionMode) {
+        e.preventDefault();
+      }
+      showSection(targetId);
+    });
+  });
+
+  viewModeBtn?.addEventListener('click', () => {
+    singleSectionMode = !singleSectionMode;
+    if (viewModeLabel) {
+      viewModeLabel.textContent = singleSectionMode ? 'Tabbed Focus' : 'Full Datasheet';
+    }
+    if (!singleSectionMode) {
+      docSections.forEach((sec) => ((sec as HTMLElement).style.display = 'block'));
+    } else {
+      const activeTab = document.querySelector('.tab-link.active');
+      const targetId = activeTab?.getAttribute('data-section') || 'sec-overview';
+      showSection(targetId);
+    }
+  });
+</script>
+
+<style>
+  /* Top Sticky Header */
+  .lab-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-topbar);
+    backdrop-filter: blur(8px);
+    border-bottom: 2px solid var(--border-strong);
+  }
+
+  .topbar-inner {
+    max-width: 1380px;
+    margin: 0 auto;
+    padding: 0.65rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .brand-cluster {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .doc-badge {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.18rem 0.5rem;
+    background: var(--badge-bg);
+    color: var(--badge-ink);
+    letter-spacing: 0.04em;
+  }
+
+  .brand-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+  }
+
+  .status-pill {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--mint-dark);
+    background: var(--mint-soft);
+    border: 1px solid var(--mint-border);
+    padding: 0.15rem 0.55rem;
+    border-radius: 3px;
+  }
+
+  .section-tabs {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  .tab-link {
+    text-decoration: none;
+    color: var(--ink-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    font-weight: 500;
+    padding: 0.36rem 0.62rem;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+  }
+
+  .tab-link:hover {
+    background: var(--bg-subtle);
+    color: var(--ink-primary);
+    border-color: var(--border-mid);
+  }
+
+  .tab-link.active {
+    background: var(--bg-callout);
+    color: var(--mint-dark);
+    border-color: var(--mint-accent);
+    font-weight: 600;
+  }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .action-btn {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    background: var(--bg-elevated);
+    color: var(--ink-primary);
+    border: 1px solid var(--border-mid);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .action-btn:hover {
+    border-color: var(--mint-accent);
+    background: var(--bg-subtle);
+  }
+
+  .theme-btn {
+    border-color: var(--mint-accent);
+    background: var(--bg-callout);
+  }
+
+  .primary-btn {
+    background: var(--badge-bg);
+    color: var(--badge-ink);
+    border-color: var(--badge-bg);
+    font-weight: 600;
+  }
+
+  .primary-btn:hover {
+    background: var(--mint-dark);
+    border-color: var(--mint-dark);
+    color: var(--ink-inverse);
+  }
+
+  /* Main Datasheet Sheet */
+  .datasheet-container {
+    max-width: 1380px;
+    margin: 1.75rem auto 3rem;
+    padding: 0 1.5rem;
+  }
+
+  .title-block {
+    background: var(--bg-sheet);
+    border: 2px solid var(--border-strong);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+  }
+
+  .title-block-top {
+    display: grid;
+    grid-template-columns: 1fr 310px;
+    border-bottom: 2px solid var(--border-strong);
+  }
+
+  .title-block-left {
+    padding: 1.75rem 2rem;
+  }
+
+  .eyebrow-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.76rem;
+    color: var(--ink-muted);
+    margin-bottom: 0.65rem;
+    flex-wrap: wrap;
+  }
+
+  .lab-tag {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--mint-dark);
+    background: var(--mint-soft);
+    padding: 0.12rem 0.45rem;
+  }
+
+  .title-block h1 {
+    font-size: 2.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 0.45rem;
+  }
+
+  .subtitle {
+    font-size: 1.08rem;
+    color: var(--ink-secondary);
+    max-width: 780px;
+  }
+
+  .title-block-stamp {
+    border-left: 2px solid var(--border-strong);
+    background: var(--bg-subtle);
+    padding: 1.15rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .stamp-box {
+    width: 100%;
+    border: 1px solid var(--border-mid);
+    background: var(--bg-elevated);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+  }
+
+  .stamp-header {
+    background: var(--badge-bg);
+    color: var(--badge-ink);
+    padding: 0.3rem 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
+  .stamp-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.28rem 0.65rem;
+    border-top: 1px solid var(--border-hairline);
+  }
+
+  .stamp-link {
+    color: var(--mint-dark);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .mint-text {
+    color: var(--mint-dark);
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    background: var(--bg-sheet);
+  }
+
+  .summary-cell {
+    padding: 1rem 1.25rem;
+    border-right: 1px solid var(--border-mid);
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .summary-cell:last-child {
+    border-right: none;
+  }
+
+  .cell-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--ink-muted);
+    letter-spacing: 0.05em;
+  }
+
+  .cell-value {
+    font-size: 0.98rem;
+    color: var(--ink-primary);
+  }
+
+  .cell-sub {
+    font-size: 0.76rem;
+    color: var(--ink-secondary);
+  }
+
+  /* Section Styling */
+  .doc-section {
+    background: var(--bg-sheet);
+    border: 1.5px solid var(--border-strong);
+    margin-bottom: 2rem;
+    padding: 1.75rem 2rem 2rem;
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.06);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    padding-bottom: 0.85rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 2px solid var(--border-strong);
+  }
+
+  .section-num {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--badge-ink);
+    background: var(--badge-bg);
+    padding: 0.2rem 0.55rem;
+    letter-spacing: 0.05em;
+  }
+
+  .section-header h2 {
+    font-size: 1.45rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .section-lead {
+    color: var(--ink-secondary);
+    margin-bottom: 1.25rem;
+    max-width: 1050px;
+  }
+
+  .section-lead code {
+    font-size: 0.85em;
+    background: var(--bg-subtle);
+    padding: 0.1rem 0.35rem;
+    border: 1px solid var(--border-mid);
+  }
+
+  /* 3D Render Strip */
+  .mcad-renders-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .render-tile {
+    border: 1px solid var(--border-mid);
+    background: var(--bg-subtle);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .render-tile-head {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.45rem 0.75rem;
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border-mid);
+    color: var(--ink-secondary);
+  }
+
+  .render-tile img {
+    width: 100%;
+    height: 190px;
+    object-fit: contain;
+    padding: 0.85rem;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.18));
+  }
+
+  /* Section 01 Layout */
+  .two-col-overview {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 2rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .prose-box h3,
+  .sub-heading {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 1.1rem 0 0.55rem;
+    color: var(--ink-primary);
+    font-family: var(--font-mono);
+    letter-spacing: -0.01em;
+  }
+
+  .prose-box h3:first-child {
+    margin-top: 0;
+  }
+
+  .prose-box p {
+    color: var(--ink-secondary);
+    margin-bottom: 0.85rem;
+  }
+
+  .prose-box a {
+    color: var(--mint-dark);
+    font-weight: 600;
+  }
+
+  .spec-list {
+    padding-left: 1.2rem;
+    color: var(--ink-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .spec-list code {
+    font-size: 0.85em;
+    background: var(--bg-subtle);
+    padding: 0.1rem 0.35rem;
+    border: 1px solid var(--border-mid);
+  }
+
+  .board-preview-card {
+    border: 1px solid var(--border-mid);
+    background: var(--bg-subtle);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .preview-header {
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--border-mid);
+    background: var(--bg-elevated);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+  }
+
+  .mini-link {
+    font-family: var(--font-mono);
+    color: var(--mint-dark);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .preview-img-wrap {
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+    background: var(--bg-cad-stage);
+  }
+
+  .preview-img-wrap img {
+    max-width: 100%;
+    max-height: 270px;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.18));
+  }
+
+  .preview-caption {
+    padding: 0.55rem 0.9rem;
+    border-top: 1px solid var(--border-mid);
+    background: var(--bg-elevated);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    display: flex;
+    justify-content: space-between;
+    color: var(--ink-secondary);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Datasheet Tables */
+  .table-block {
+    border: 1px solid var(--border-strong);
+    background: var(--bg-sheet);
+  }
+
+  .table-caption {
+    background: var(--bg-subtle);
+    padding: 0.5rem 0.9rem;
+    border-bottom: 1px solid var(--border-strong);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ink-primary);
+    letter-spacing: 0.03em;
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  .datasheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+  }
+
+  .datasheet-table th {
+    background: var(--bg-table-head);
+    color: var(--ink-primary);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: left;
+    padding: 0.6rem 0.85rem;
+    border-bottom: 1.5px solid var(--border-strong);
+    border-right: 1px solid var(--border-hairline);
+  }
+
+  .datasheet-table td {
+    padding: 0.55rem 0.85rem;
+    border-bottom: 1px solid var(--border-hairline);
+    border-right: 1px solid var(--border-hairline);
+    vertical-align: top;
+  }
+
+  .datasheet-table tr:hover td {
+    background: var(--bg-table-hover);
+  }
+
+  .num-col {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .highlight-cell {
+    color: var(--mint-dark);
+    font-weight: 600;
+    background: var(--highlight-cell-bg);
+  }
+
+  .muted-cell {
+    color: var(--ink-muted);
+    font-size: 0.78rem;
+  }
+
+  .notes-col {
+    color: var(--ink-secondary);
+  }
+
+  /* Soft-Power Latch Simulator */
+  .latch-simulator-box {
+    border: 1.5px solid var(--mint-accent);
+    background: var(--bg-callout);
+    padding: 1.35rem;
+    margin-bottom: 2rem;
+  }
+
+  .sim-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.15rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--mint-border);
+  }
+
+  .sim-badge {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: var(--badge-bg);
+    color: var(--badge-ink);
+    padding: 0.15rem 0.5rem;
+    display: inline-block;
+    margin-bottom: 0.35rem;
+  }
+
+  .sim-header h3 {
+    font-size: 1.15rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .sim-header p {
+    font-size: 0.88rem;
+    color: var(--ink-secondary);
+  }
+
+  .sim-buttons {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .sim-step-btn {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 500;
+    padding: 0.5rem 0.8rem;
+    background: var(--bg-elevated);
+    color: var(--ink-primary);
+    border: 1px solid var(--border-mid);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .sim-step-btn:hover {
+    border-color: var(--mint-dark);
+  }
+
+  .sim-step-btn.active {
+    background: var(--badge-bg);
+    color: var(--badge-ink);
+    border-color: var(--badge-bg);
+    font-weight: 600;
+  }
+
+  .net-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .net-state-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-mid);
+    border-left: 4px solid var(--border-strong);
+    padding: 0.65rem 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+  }
+
+  .net-state-card[data-state='active'] {
+    border-left-color: var(--mint-accent);
+    background: var(--net-active-bg);
+  }
+
+  .net-state-card[data-state='warn'] {
+    border-left-color: var(--amber-warn);
+    background: var(--net-warn-bg);
+  }
+
+  .net-state-card[data-state='off'] {
+    border-left-color: #64748b;
+    background: var(--net-off-bg);
+  }
+
+  .net-name {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+    font-weight: 600;
+  }
+
+  .net-val {
+    font-family: var(--font-mono);
+    font-size: 0.94rem;
+    color: var(--ink-primary);
+  }
+
+  .net-desc {
+    font-size: 0.75rem;
+    color: var(--ink-secondary);
+  }
+
+  .sim-explanation {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-mid);
+    padding: 0.9rem 1.1rem;
+  }
+
+  .sim-step-tag {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--mint-dark);
+    margin-bottom: 0.3rem;
+  }
+
+  /* Subsystem Grid */
+  .subsystem-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  .subsystem-card {
+    border: 1px solid var(--border-mid);
+    background: var(--bg-elevated);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .sub-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .sub-code {
+    font-size: 0.74rem;
+    font-weight: 600;
+    background: var(--badge-bg);
+    color: var(--badge-ink);
+    padding: 0.14rem 0.45rem;
+  }
+
+  .sub-refs {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  .ref-chip {
+    font-size: 0.7rem;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-mid);
+    padding: 0.08rem 0.38rem;
+    color: var(--ink-secondary);
+  }
+
+  .subsystem-card h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  .sub-summary {
+    font-size: 0.87rem;
+    color: var(--ink-secondary);
+  }
+
+  .sub-kv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    background: var(--bg-subtle);
+    padding: 0.65rem;
+    border: 1px solid var(--border-hairline);
+  }
+
+  .kv-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .kv-label {
+    font-size: 0.68rem;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+  }
+
+  .kv-val {
+    font-size: 0.77rem;
+    color: var(--ink-primary);
+  }
+
+  .sub-details {
+    padding-left: 1.1rem;
+    font-size: 0.83rem;
+    color: var(--ink-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  /* CAD Viewer */
+  .cad-viewer-wrapper {
+    border: 1.5px solid var(--border-strong);
+    background: var(--bg-elevated);
+  }
+
+  .cad-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0.9rem;
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border-strong);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .cad-layer-tabs {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+
+  .cad-tab {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    padding: 0.4rem 0.75rem;
+    background: var(--bg-elevated);
+    color: var(--ink-primary);
+    border: 1px solid var(--border-mid);
+    cursor: pointer;
+  }
+
+  .cad-tab.active {
+    background: var(--badge-bg);
+    color: var(--badge-ink);
+    border-color: var(--badge-bg);
+    font-weight: 600;
+  }
+
+  .cad-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .ctrl-btn {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    padding: 0.32rem 0.65rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-mid);
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--ink-primary);
+  }
+
+  .ctrl-btn:hover {
+    border-color: var(--mint-accent);
+  }
+
+  .zoom-readout {
+    font-size: 0.76rem;
+    min-width: 48px;
+    text-align: center;
+  }
+
+  .cad-viewport {
+    height: 620px;
+    overflow: hidden;
+    position: relative;
+    background-color: #fcfcfa;
+    background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+    background-size: 18px 18px;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cad-viewport.grabbing {
+    cursor: grabbing;
+  }
+
+  .cad-canvas {
+    transform-origin: center center;
+    transition: transform 0.06s ease-out;
+    max-width: 95%;
+    max-height: 95%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cad-canvas img {
+    max-width: 100%;
+    max-height: 580px;
+    object-fit: contain;
+    user-select: none;
+  }
+
+  .cad-footer {
+    padding: 0.55rem 0.9rem;
+    border-top: 1px solid var(--border-mid);
+    background: var(--bg-subtle);
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.76rem;
+    color: var(--ink-secondary);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Filter Bars (BOM & Pinout) */
+  .filter-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .category-pills {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+
+  .pill-btn {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 0.38rem 0.75rem;
+    background: var(--bg-subtle);
+    color: var(--ink-primary);
+    border: 1px solid var(--border-mid);
+    cursor: pointer;
+  }
+
+  .pill-btn.active {
+    background: var(--badge-bg);
+    color: var(--badge-ink);
+    border-color: var(--badge-bg);
+    font-weight: 600;
+  }
+
+  .search-and-export {
+    display: flex;
+    gap: 0.5rem;
+    flex: 1;
+    max-width: 520px;
+    justify-content: flex-end;
+  }
+
+  .lab-search {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    padding: 0.42rem 0.75rem;
+    border: 1px solid var(--border-mid);
+    background: var(--bg-elevated);
+    color: var(--ink-primary);
+  }
+
+  .lab-search:focus {
+    outline: 2px solid var(--mint-accent);
+    border-color: var(--mint-dark);
+  }
+
+  .cat-tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 0.12rem 0.42rem;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-mid);
+    white-space: nowrap;
+  }
+
+  .net-badge {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--mint-dark);
+    background: var(--mint-soft);
+    padding: 0.1rem 0.42rem;
+    border: 1px solid var(--mint-border);
+  }
+
+  /* Section 07 Build Log, Chat Archives & Datasheets */
+  .chat-archives-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .chat-archive-card {
+    border: 1.5px solid var(--border-mid);
+    background: var(--bg-elevated);
+    padding: 1rem 1.1rem;
+    text-decoration: none;
+    color: var(--ink-primary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    transition: all 0.15s ease;
+  }
+
+  .chat-archive-card:hover {
+    border-color: var(--mint-accent);
+    background: var(--bg-callout);
+    transform: translateY(-2px);
+  }
+
+  .chat-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.72rem;
+  }
+
+  .chat-id-badge {
+    background: var(--badge-bg);
+    color: var(--badge-ink);
+    padding: 0.1rem 0.42rem;
+    font-weight: 600;
+  }
+
+  .chat-platform {
+    color: var(--mint-dark);
+    font-weight: 600;
+  }
+
+  .chat-archive-card h4 {
+    font-size: 0.92rem;
+    line-height: 1.3;
+  }
+
+  .chat-archive-card p {
+    font-size: 0.78rem;
+    color: var(--ink-secondary);
+  }
+
+  .two-col-log {
+    display: grid;
+    grid-template-columns: 1.25fr 0.75fr;
+    gap: 2rem;
+  }
+
+  .timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .timeline-card {
+    border: 1px solid var(--border-mid);
+    border-left: 4px solid var(--mint-accent);
+    padding: 1.2rem 1.35rem;
+    background: var(--bg-elevated);
+  }
+
+  .timeline-meta {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.72rem;
+    flex-wrap: wrap;
+  }
+
+  .date-chip {
+    background: var(--badge-bg);
+    color: var(--badge-ink);
+    padding: 0.12rem 0.48rem;
+    font-weight: 600;
+  }
+
+  .run-chip {
+    color: var(--ink-muted);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-hairline);
+    padding: 0.1rem 0.45rem;
+  }
+
+  .timeline-card h4 {
+    font-size: 1.06rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .chap-sub {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--mint-dark);
+    margin-bottom: 0.65rem;
+  }
+
+  .timeline-card p {
+    font-size: 0.85rem;
+    color: var(--ink-secondary);
+    margin-bottom: 0.65rem;
+  }
+
+  .terminal-quote {
+    font-size: 0.76rem;
+    background: var(--bg-subtle);
+    border-left: 3px solid var(--border-strong);
+    padding: 0.55rem 0.8rem;
+    margin: 0.65rem 0;
+    color: var(--ink-primary);
+  }
+
+  .chap-highlights {
+    padding-left: 1.15rem;
+    font-size: 0.81rem;
+    color: var(--ink-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .chap-footer {
+    padding-top: 0.45rem;
+    border-top: 1px solid var(--border-hairline);
+  }
+
+  .chap-link {
+    font-size: 0.75rem;
+    color: var(--mint-dark);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .chap-link:hover {
+    text-decoration: underline;
+  }
+
+  .silkscreen-sig-box {
+    border: 1.5px solid var(--border-strong);
+    background: var(--bg-subtle);
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .sig-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--mint-dark);
+    margin-bottom: 0.45rem;
+  }
+
+  .sig-code {
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--ink-primary);
+    background: var(--bg-elevated);
+    padding: 0.75rem 0.95rem;
+    border: 1px solid var(--border-mid);
+  }
+
+  .vault-intro {
+    font-size: 0.85rem;
+    color: var(--ink-secondary);
+    margin-bottom: 0.75rem;
+  }
+
+  .pdf-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .pdf-card {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--border-mid);
+    background: var(--bg-elevated);
+    text-decoration: none;
+    color: var(--ink-primary);
+    transition: all 0.15s ease;
+  }
+
+  .pdf-card:hover {
+    border-color: var(--mint-dark);
+    background: var(--bg-callout);
+  }
+
+  .pdf-icon {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    padding: 0.35rem 0.45rem;
+  }
+
+  .pdf-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .pdf-info strong {
+    font-size: 0.86rem;
+  }
+
+  .pdf-meta {
+    font-size: 0.74rem;
+    color: var(--ink-muted);
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .pdf-arrow {
+    font-family: var(--font-mono);
+    color: var(--mint-dark);
+    font-weight: 700;
+  }
+
+  .erc-policy-box {
+    border: 1px solid var(--border-strong);
+    background: var(--bg-subtle);
+    padding: 1rem 1.15rem;
+  }
+
+  .erc-policy-box h4 {
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .erc-policy-box p {
+    font-size: 0.83rem;
+    color: var(--ink-secondary);
+  }
+
+  /* Footer */
+  .datasheet-footer {
+    border-top: 2px solid var(--border-strong);
+    background: var(--bg-sheet);
+    padding: 1.25rem 1.5rem;
+    font-size: 0.8rem;
+    color: var(--ink-secondary);
+  }
+
+  .footer-inner {
+    max-width: 1380px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .footer-link {
+    color: var(--mint-dark);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  @media (max-width: 1024px) {
+    .title-block-top,
+    .two-col-overview,
+    .subsystem-grid,
+    .two-col-log,
+    .mcad-renders-strip {
+      grid-template-columns: 1fr;
+    }
+    .chat-archives-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .title-block-stamp {
+      border-left: none;
+      border-top: 2px solid var(--border-strong);
+    }
+    .summary-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .net-cards-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .summary-grid,
+    .net-cards-grid,
+    .sub-kv-grid,
+    .chat-archives-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

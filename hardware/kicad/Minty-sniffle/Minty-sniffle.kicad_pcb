@@ -2307,7 +2307,7 @@
 				(xyz -90 -0 -0)
 			)
 		)
-		(model "C:/Users/Shourya Pandey/Documents/minty-sniffle/hardware/kicad/Libraries/ul_B3U-1000P/B3U-1000P--3DModel-STEP-56544.STEP"
+		(model "${KIPRJMOD}/../Libraries/ul_B3U-1000P/B3U-1000P--3DModel-STEP-56544.STEP"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -4040,7 +4040,7 @@
 				(xyz -90 -0 -0)
 			)
 		)
-		(model "C:/Users/Shourya Pandey/Documents/minty-sniffle/hardware/kicad/Libraries/ul_B3U-1000P/B3U-1000P--3DModel-STEP-56544.STEP"
+		(model "${KIPRJMOD}/../Libraries/ul_B3U-1000P/B3U-1000P--3DModel-STEP-56544.STEP"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -4768,7 +4768,7 @@
 				(xyz -90 -0 -0)
 			)
 		)
-		(model "C:/Users/Shourya Pandey/Documents/minty-sniffle/hardware/kicad/Libraries/3d files/FM24CL16B-GTR.STEP"
+		(model "${KIPRJMOD}/../Libraries/3d files/FM24CL16B-GTR.STEP"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -5120,7 +5120,7 @@
 				(xyz -90 -0 -0)
 			)
 		)
-		(model "C:/Users/Shourya Pandey/Documents/minty-sniffle/hardware/kicad/Libraries/3d files/BME680--3DModel-STEP-510211.STEP"
+		(model "${KIPRJMOD}/../Libraries/3d files/BME680--3DModel-STEP-510211.STEP"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -7055,7 +7055,7 @@
 				(xyz -90 -0 -0)
 			)
 		)
-		(model "C:/Users/Shourya Pandey/Documents/minty-sniffle/hardware/kicad/Libraries/ul_B3U-1000P/B3U-1000P--3DModel-STEP-56544.STEP"
+		(model "${KIPRJMOD}/../Libraries/ul_B3U-1000P/B3U-1000P--3DModel-STEP-56544.STEP"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -7870,7 +7870,7 @@
 			(uuid "d518d3a5-fa81-4086-8e40-b12be5de8ade")
 		)
 		(embedded_fonts no)
-		(model "C:/Users/Shourya Pandey/Documents/minty-sniffle/hardware/kicad/Libraries/3d files/BH1000G--3DModel-STEP-56544.STEP"
+		(model "${KIPRJMOD}/../Libraries/3d files/BH1000G--3DModel-STEP-56544.STEP"
 			(offset
 				(xyz 0 0 -2.5)
 			)
