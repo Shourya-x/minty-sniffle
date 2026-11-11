@@ -1,4 +1,6 @@
 .history/
+hardware/kicad/Minty-sniffle/.history
+.env
 website/node_modules/
 website/dist/
 website/.astro/

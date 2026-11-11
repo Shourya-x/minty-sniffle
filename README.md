@@ -18,11 +18,13 @@ By deploying multiple Minty-Sniffle nodes across a space, the network can triang
 *   **Duty-Cycled Power:** Sensor heater is pulsed optimally to allow months of continuous run time on a single CR2477.
 *   **BLE Mesh Ready:** Nodes broadcast sensor payloads to a central gateway for room-scale heatmapping.
 
-## Repository Structure (Planned)
-*   `/Hardware/ECAD/` - Schematic and PCB layout files (KiCad/Altium).
-*   `/Hardware/MCAD/` - 3D STEP files and STL files for the mini 3D printer.
-*   `/Firmware/` - nRF52 C/C++ source code, BLE stack configurations, and BME688 driver integration.
-*   `/Docs/` - Datasheets, power consumption calculations, and AI training datasets.
+## Repository Structure
+*   `/website/` - Interactive Astro + Three.js hardware showcase, 3D enclosure/PCBA studio, soft-latch simulator, and digital datasheet.
+*   `/hardware/kicad/` - KiCad 9 schematic, 2-layer PCB layout, and JLCPCB manufacturing archives.
+*   `/hardware/cad/` - FreeCAD parametric enclosure models (`.FCStd`), STEP assembly, and 3D-printable `.STL` files.
+*   `/datasheets/` - Component reference PDF datasheets (Holyiot nRF52840, Bosch BME680, SD3031 RTC, FM24CL16B FRAM).
+*   `/docs/` - Architecture notes, power calculations, and hardware documentation.
+*   `/firmware/` - nRF52 C/C++ source code, BLE stack configurations, and sensor driver integration.
 
 ## Development Sprint Log
 - **Phase 1:** MCAD physical bounding box and DXF export (50x30x15mm).
